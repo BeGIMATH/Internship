@@ -1,0 +1,10 @@
+name: impulse
+
+channels:
+  - conda-forge
+
+dependencies:
+  - boost
+  - python=3.7
+  - cmake
+  - openmpi

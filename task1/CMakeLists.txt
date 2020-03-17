@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 2.8.3)
+
+project(task1 CXX)
+
+
+
+find_package (Python3 COMPONENTS Interpreter Development REQUIRED)
+
+FIND_PACKAGE(Boost COMPONENTS REQUIRED python )
+FIND_PACKAGE(Boost COMPONENTS REQUIRED mpi )
+#FIND_PACKAGE(MPI REQUIRED)
+
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS}) # ${MPI_CXX_INCLUDE_PATH})
+
+ADD_EXECUTABLE(task1 main.cpp)
+TARGET_LINK_LIBRARIES(task1 Boost::python Boost::mpi Python3::Python) # ${MPI_CXX_LIBRARIES})
+
+install(TARGETS task1 RUNTIME DESTINATION "bin")
