@@ -6,7 +6,7 @@
 #include <vector>                 // for std::vector
 #include <cassert>                    // for assert
 #include <boost/python.hpp>
-const int threads_to_use = 8;
+const int threads_to_use = 2;
 
 using namespace boost::python;
 
@@ -35,7 +35,8 @@ int main()
 {
   Py_Initialize();
   object main_module = import("__main__");
-  object main_namespace = main_module.attr("__dict__");
+	object main_namespace = main_module.attr("__dict__");
+  
   list mlist;
     
   for (int i = 0; i < 10000; ++i)
@@ -54,21 +55,15 @@ int main()
   for (int Start_it = 0; Start_it < len(mlist); Start_it += chunk_per_thread)
   {
     int chunk_size = chunk_per_thread;
-    t.push_back(new boost::thread(partial_change,Start_it, chunk_size,mlist));
-    
+    t.push_back(new boost::thread(partial_change,Start_it, chunk_size, mlist));
   }
   
   for (int i = 0; i < threads_to_use; i++){
       t[i]->join();
+      delete t[i];
   }
     
 
   boost::chrono::high_resolution_clock::time_point end = boost::chrono::high_resolution_clock::now();
- 
-  for (int i = 0; i < threads_to_use; i++)
-  {
-    delete t[i];
-  }
-  
   std::cout << "Time taken: " << (end - start).count() * ((double) boost::chrono::high_resolution_clock::period::num / boost::chrono::high_resolution_clock::period::den) << std::endl;
 }
