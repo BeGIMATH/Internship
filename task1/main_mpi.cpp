@@ -23,18 +23,24 @@ int main()
     {
         mlist.append(i);
     }
-
+    exec("def f(x):\n"
+         "  return x + 1\n"
+         "\n", main_namespace);
+    
+    PyObject* f = object(main_module.attr("f")).ptr();
     int block_size = int(len(mlist) / comm_size);
     double start, end;
     start = MPI_Wtime(); 
    
    
-
+    int el;
     for (int j = rank; j < len(mlist); j = j + comm_size)
     {
         for (int i = 0; i < 10000; ++i)
         {
-            mlist[i] = mlist[i] + 1;
+            
+            el  = extract<int>(mlist[i]);
+            mlist[i] = call<int>(f,el);
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);

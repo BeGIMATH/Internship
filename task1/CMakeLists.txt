@@ -13,8 +13,10 @@ FIND_PACKAGE(MPI REQUIRED)
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS} ${MPI_INCLUDE_DIRS})
 
+
 ADD_EXECUTABLE(task1_seq main_seq.cpp)
 TARGET_LINK_LIBRARIES(task1_seq Boost::python Python3::Python ) 
+
 
 ADD_EXECUTABLE(task1_mpi main_mpi.cpp)
 TARGET_LINK_LIBRARIES(task1_mpi Boost::python Python3::Python ${MPI_CXX_LIBRARIES}) 
