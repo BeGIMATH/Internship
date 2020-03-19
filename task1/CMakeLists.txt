@@ -8,7 +8,7 @@ project(task1 CXX)
 FIND_PACKAGE(Python3 COMPONENTS Interpreter Development REQUIRED)
 
 
-FIND_PACKAGE(Boost COMPONENTS REQUIRED python)
+FIND_PACKAGE(Boost COMPONENTS REQUIRED python chrono system thread)
 FIND_PACKAGE(MPI REQUIRED)
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS} ${MPI_INCLUDE_DIRS})
@@ -22,3 +22,6 @@ ADD_EXECUTABLE(task1_mpi main_mpi.cpp)
 TARGET_LINK_LIBRARIES(task1_mpi Boost::python Python3::Python ${MPI_CXX_LIBRARIES}) 
 TARGET_COMPILE_OPTIONS(task1_mpi PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 TARGET_LINK_LIBRARIES(task1_mpi ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINK_FLAGS})
+
+ADD_EXECUTABLE(task1_thread main_thread.cpp)
+TARGET_LINK_LIBRARIES(task1_thread Boost::chrono Boost::thread Boost::python Python3::Python) 
