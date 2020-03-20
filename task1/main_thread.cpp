@@ -6,14 +6,25 @@
 #include <vector>                 // for std::vector
 #include <cassert>                    // for assert
 #include <boost/python.hpp>
-const int threads_to_use = 2;
+const int threads_to_use = 4;
 
 using namespace boost::python;
+
+class ScopedGILRelease {
+public:
+  inline ScopedGILRelease() { m_thread_state = PyEval_SaveThread(); }
+  inline ~ScopedGILRelease() { PyEval_RestoreThread(m_thread_state); m_thread_state = NULL; }
+private:
+  PyThreadState* m_thread_state;
+};
+
 
 void partial_change(int start_it, int chunk_size,list l)
 {
     object main_module = import("__main__");
 		object main_namespace = main_module.attr("__dict__");
+   
+  
     exec("def f(x):\n"
        "  return x + 1\n"
        "\n", main_namespace);
@@ -34,6 +45,7 @@ void partial_change(int start_it, int chunk_size,list l)
 int main()
 {
   Py_Initialize();
+ 
   object main_module = import("__main__");
 	object main_namespace = main_module.attr("__dict__");
   
@@ -45,15 +57,14 @@ int main()
   }
   
   std::vector<boost::thread *> t;
-
-
-  
   int chunk_per_thread = len(mlist) / threads_to_use;
-  
   boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
+  ScopedGILRelease release_gil = ScopedGILRelease();
   
   for (int Start_it = 0; Start_it < len(mlist); Start_it += chunk_per_thread)
   {
+    
+  
     int chunk_size = chunk_per_thread;
     t.push_back(new boost::thread(partial_change,Start_it, chunk_size, mlist));
   }
