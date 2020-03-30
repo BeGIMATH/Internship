@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "ostream": "cpp",
+        "ratio": "cpp",
+        "list": "cpp",
+        "*.ipp": "cpp"
+    }
+}

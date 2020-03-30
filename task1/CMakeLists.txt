@@ -1,27 +1,36 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8)
 
-project(task1 CXX)
+project(task1)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 
 
-
+set(PYTHON_LIBRARY "$CONDA_PREFIX/lib")
+set(PYTHON_INCLUDE_DIR "CONDA_PREFIX/include/python3.7m")
 FIND_PACKAGE(Python3 COMPONENTS Interpreter Development REQUIRED)
 
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
 
-FIND_PACKAGE(Boost COMPONENTS REQUIRED python chrono system thread)
-FIND_PACKAGE(MPI REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS REQUIRED python chrono system thread mpi serialization mpi_python)
 FIND_PACKAGE(PythonLibs)
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS} ${MPI_INCLUDE_DIRS})
+FIND_PACKAGE(cereal REQUIRED)
 
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(task1_seq main_seq.cpp)
-TARGET_LINK_LIBRARIES(task1_seq Boost::python Python3::Python ) 
+TARGET_LINK_LIBRARIES(task1_seq Boost::python Python3::Python Boost::mpi_python) 
 
 
 ADD_EXECUTABLE(task1_mpi main_mpi.cpp)
-TARGET_LINK_LIBRARIES(task1_mpi Boost::python Python3::Python ${MPI_CXX_LIBRARIES}) 
-TARGET_COMPILE_OPTIONS(task1_mpi PRIVATE ${MPI_CXX_COMPILE_FLAGS})
-TARGET_LINK_LIBRARIES(task1_mpi ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINK_FLAGS})
+TARGET_LINK_LIBRARIES(task1_mpi  Boost::python  Python3::Python Boost::mpi Boost::mpi_python) 
+
+ADD_EXECUTABLE(test_mpi test_mpi.cpp)
+TARGET_LINK_LIBRARIES(test_mpi Boost::python Python3::Python Boost::mpi Boost::mpi_python ) 
+#TARGET_LINK_LIBRARIES(test_mpi  ${Boost_LIBRARIES} Python3::Python Boost::mpi_python Boost::serialization ${MPI_CXX_LIBRARIES}) 
+
 
 ADD_EXECUTABLE(task1_thread main_thread.cpp)
-TARGET_LINK_LIBRARIES(task1_thread Boost::chrono Boost::thread Boost::python Python3::Python) 
+TARGET_LINK_LIBRARIES(task1_thread Boost::chrono Boost::thread Boost::python  Python3::Python cereal) 
+
