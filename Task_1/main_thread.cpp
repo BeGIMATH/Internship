@@ -6,48 +6,42 @@
 #include <vector>                 // for std::vector
 #include <cassert>                    // for assert
 #include <boost/python.hpp>
-const int threads_to_use = 2;
+const int threads_to_use = 1;
 
 using namespace boost::python;
-
-class ScopedGILRelease {
-public:
-  inline ScopedGILRelease() { m_thread_state = PyEval_SaveThread(); }
-  inline ~ScopedGILRelease() { PyEval_RestoreThread(m_thread_state); m_thread_state = NULL; }
-private:
-  PyThreadState* m_thread_state;
-};
 
 
 void partial_change(int start_it, int chunk_size,list l)
 {
     
+    Py_Initialize();
+    object main_module = import("__main__");
+		object main_namespace = main_module.attr("__dict__");
     
-    //ScopedGILRelease release_gil;
-    //object main_module = import("__main__");
-		object main_namespace = dict();//main_module.attr("__dict__");
-   
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
     
     exec("def f(x):\n"
        "  return x + 1\n"
        "\n", main_namespace);
-    
+   
     PyObject* f = object(main_namespace.attr("f")).ptr();
-    PyGILState_Release(gstate);
+     PyGILState_Release(gstate);
     int el;
-    for (int j = start_it; j < start_it + chunk_size; j++)
+    for (int j = 0; j < 10000; ++j)
     {
-        for (int i = 0; i < 10000; ++i)
+        
+        for (int i = start_it; i < start_it + chunk_size; i++)
         {
-            PyGILState_STATE gstate;
+            
             gstate = PyGILState_Ensure();
             el  = extract<int>(l[i]);
             l[i] = call<int>(f,el);
             PyGILState_Release(gstate);
         }
+        
     }
+    
     
     
 
@@ -55,7 +49,6 @@ void partial_change(int start_it, int chunk_size,list l)
 
 int main()
 {
-  Py_Initialize();
   
   //object main_module = import("__main__");
 	//object main_namespace = main_module.attr("__dict__");

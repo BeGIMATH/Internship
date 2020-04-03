@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(task1)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 
 
@@ -24,13 +24,10 @@ TARGET_LINK_LIBRARIES(task1_seq Boost::python Python3::Python Boost::mpi_python)
 
 
 ADD_EXECUTABLE(task1_mpi main_mpi.cpp)
-TARGET_LINK_LIBRARIES(task1_mpi  Boost::python  Python3::Python Boost::mpi Boost::mpi_python) 
-
-ADD_EXECUTABLE(test_mpi test_mpi.cpp)
-TARGET_LINK_LIBRARIES(test_mpi Boost::python Python3::Python Boost::mpi Boost::mpi_python ) 
-#TARGET_LINK_LIBRARIES(test_mpi  ${Boost_LIBRARIES} Python3::Python Boost::mpi_python Boost::serialization ${MPI_CXX_LIBRARIES}) 
+TARGET_LINK_LIBRARIES(task1_mpi  Boost::python  Python3::Python Boost::mpi_python Boost::serialization Boost::system)  
 
 
 ADD_EXECUTABLE(task1_thread main_thread.cpp)
 TARGET_LINK_LIBRARIES(task1_thread Boost::chrono Boost::thread Boost::python  Python3::Python cereal) 
 
+LINK_LIBRARIES(${Boost_LIBRARIES} ${PYTHON_LIBRARIES}) 
