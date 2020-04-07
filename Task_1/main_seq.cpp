@@ -3,7 +3,7 @@
 #include <fstream>
 #include <boost/python.hpp>
 #include <chrono>
-
+#include <boost/mpi/python/serialize.hpp>
 using namespace boost::python;
 
 int main(int argc, char *argv[])
@@ -33,39 +33,43 @@ int main(int argc, char *argv[])
     PyObject* m_dump = object(my_pickle.attr("dump")).ptr();
     PyObject* m_load = object(my_pickle.attr("load")).ptr();
     
+    auto start = std::chrono::high_resolution_clock::now();
+
     
     int el;
-    auto start = std::chrono::high_resolution_clock::now();
-    for (int j = 0; j < 100; j++)
+
+    
+    
+    
+    
+    for (int j = 0; j < 10000; j++)
     {
-        for (int i = 0; i < 100; ++i)
+        for (int i = 0; i < 10000; ++i)
         {
             el  = extract<int>(mlist[i]);
             mlist[i] = call<int>(f,el);
         }
     }
-    /*
-    exec("file = open('text.obj', 'w')"
-         "\n", main_namespace);
-    PyObject* file = object(main_module.attr("file")).ptr();
-    call<std::fstream>(m_dump,mlist,file);
-    */
-    std::string s_Local_l = call<std::string>(m_dumps,mlist);  
-    
-                                                        
-    
-    PyObject* ps_Local_l = PyBytes_FromStringAndSize(s_Local_l.c_str(), s_Local_l.size());
+
     
     
-    object LOCAL_l = call<boost::python::object>(m_loads,&ps_Local_l);
-     
+                                                                            
     auto stop = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration<double>(stop - start).count();
     
     std::cout << elapsed << " seconds." << std::endl;
+    std::ofstream myfile;
+        myfile.open("example.txt");
+        if(myfile.is_open()){
 
-   
-  
+        for(int i=0; i < len(mlist); i++){
+            myfile << "Nr " << i << " " << extract<int>(mlist[i]) << std::endl;
+        }
+        
+        myfile.close();
+        }
+        else std::cout << "Unable to open file";
+    std::cout << len(mlist) << std::endl;
     return 0;
   
 }
