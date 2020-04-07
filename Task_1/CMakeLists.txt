@@ -29,9 +29,3 @@ TARGET_LINK_LIBRARIES(task1_mpi  Boost::python  Python3::Python Boost::mpi_pytho
 ADD_EXECUTABLE(task1_thread main_thread.cpp)
 TARGET_LINK_LIBRARIES(task1_thread Boost::chrono Boost::thread Boost::python  Python3::Python) 
 
-ADD_EXECUTABLE(task1_thread_1 main_thread1.cpp)
-TARGET_LINK_LIBRARIES(task1_thread_1 Boost::chrono Boost::thread Boost::python  Python3::Python) 
-
-ADD_EXECUTABLE(task1_thread_2 main_thread2.cpp)
-TARGET_LINK_LIBRARIES(task1_thread_2 Boost::chrono Boost::thread Boost::python  Python3::Python) 
-
