@@ -35,8 +35,3 @@ TARGET_LINK_LIBRARIES(task1_thread_1 Boost::chrono Boost::thread Boost::python  
 ADD_EXECUTABLE(task1_thread_2 main_thread2.cpp)
 TARGET_LINK_LIBRARIES(task1_thread_2 Boost::chrono Boost::thread Boost::python  Python3::Python) 
 
-
-ADD_EXECUTABLE(task1_omp main_omp.cpp)
-TARGET_LINK_LIBRARIES(task1_omp OpenMP::OpenMP_CXX Boost::python  Python3::Python) 
-#TARGET_COMPILE_OPTIONS(task1_omp PRIVATE -Werror -Wall -Wextra)
-#LINK_LIBRARIES(${Boost_LIBRARIES} ${PYTHON_LIBRARIES}) 
