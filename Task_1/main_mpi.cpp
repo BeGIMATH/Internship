@@ -114,7 +114,7 @@ int main()
             list LOCAL_l = call<list>(m_loads,retval);
             global_l += LOCAL_l;
         }
-        
+        /*
         std::ofstream myfile;
         myfile.open("example.txt");
         
@@ -124,6 +124,7 @@ int main()
         }
         
         myfile.close();
+        */
         
         
         
