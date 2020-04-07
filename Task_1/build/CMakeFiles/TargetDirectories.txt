@@ -1,5 +1,0 @@
-/home/begatim/Desktop/Thesis_Project/Internship/Task_1/build/CMakeFiles/rebuild_cache.dir
-/home/begatim/Desktop/Thesis_Project/Internship/Task_1/build/CMakeFiles/edit_cache.dir
-/home/begatim/Desktop/Thesis_Project/Internship/Task_1/build/CMakeFiles/task1_thread.dir
-/home/begatim/Desktop/Thesis_Project/Internship/Task_1/build/CMakeFiles/task1_seq.dir
-/home/begatim/Desktop/Thesis_Project/Internship/Task_1/build/CMakeFiles/task1_mpi.dir
