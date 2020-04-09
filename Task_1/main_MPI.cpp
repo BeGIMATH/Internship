@@ -1,21 +1,21 @@
 
 #include <iostream>
-#include <boost/mpi.hpp>
-#include <boost/mpi/python.hpp>
-#include <boost/serialization/string.hpp>
+#include <mpi.h>
 #include <fstream>
+#include <string>
+#include <boost/python.hpp>
 using namespace boost::python;
-namespace mpi = boost::mpi;
 
-//#include "serial.h"
 int main()
 {
-    double start, end;
-    boost::mpi::environment env;
-    boost::mpi::communicator world;
-    int size = world.size();
-    int rank = world.rank();
+   
     
+    int size,rank;
+    MPI_Init(NULL, NULL);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Status  status;
+
     Py_Initialize();
     
     object main_module = import("__main__");
@@ -32,24 +32,25 @@ int main()
     PyObject* m_dumps = object(my_pickle.attr("dumps")).ptr();
     PyObject* m_loads = object(my_pickle.attr("loads")).ptr();
    
-    mpi::timer T;
-    //list mlist;
+    double start = MPI_Wtime();
     
 
     
-    
-    
-    //std::cout << chunk << std::endl;
-    
     list global_l;
     
-    if(world.rank() != 0){  
+    if(rank != 0){  
         list local_l;
         int il;
-        std::string s_mlist;
+    
+        MPI_Probe(0, 0,MPI_COMM_WORLD, &status);
+        int count;
+        MPI_Get_count(&status,MPI_CHAR,&count);
+        char buf [count];
+        MPI_Recv(&buf,count,MPI_CHAR,0,0,MPI_COMM_WORLD,&status);
         
-        world.recv(0,0,s_mlist);
-        PyObject* ps_Local_l = PyBytes_FromStringAndSize(s_mlist.c_str(), s_mlist.size());
+        
+        PyObject* ps_Local_l = PyBytes_FromStringAndSize(buf, count);
+        
         auto retval = boost::python::object(boost::python::handle<>(ps_Local_l));
         list mlist = call<list>(m_loads,retval);
 
@@ -69,10 +70,11 @@ int main()
                 local_l[i] = call<int>(f,el);
             }
         }
-        
+                         
         std::string s_Local_l = call<std::string>(m_dumps,local_l);  
                                  
-        world.send(0,rank,s_Local_l);
+        
+        MPI_Send(&s_Local_l[0], s_Local_l.size() + 1, MPI_CHAR, 0, rank, MPI_COMM_WORLD);
     }
     
     else{
@@ -83,7 +85,9 @@ int main()
          }
         std::string s_mlist = call<std::string>(m_dumps,mlist);
         for(int i = 1; i < size; i++){
-            world.send(i,0,s_mlist);
+            
+            MPI_Send(&s_mlist[0],s_mlist.size()+1,MPI_CHAR,i,0,MPI_COMM_WORLD);
+
         }
         
         int chunk = int(len(mlist)/size);
@@ -108,13 +112,23 @@ int main()
         
         std::string s_Local_l;
         for(int i = 1; i < size; i++){
-            world.recv(i,i,s_Local_l);
-            PyObject* ps_Local_l = PyBytes_FromStringAndSize(s_Local_l.c_str(), s_Local_l.size());
+
+            
+            MPI_Status status;
+            MPI_Probe(i, i,MPI_COMM_WORLD, &status);
+            int count;
+            MPI_Get_count(&status,MPI_CHAR,&count);
+            char buf [count];
+            MPI_Recv(&buf,count,MPI_CHAR,i,i,MPI_COMM_WORLD,&status);
+            
+
+            PyObject* ps_Local_l = PyBytes_FromStringAndSize(buf, count);
+           
             auto retval = boost::python::object(boost::python::handle<>(ps_Local_l));
             list LOCAL_l = call<list>(m_loads,retval);
             global_l += LOCAL_l;
         }
-        /*
+        
         std::ofstream myfile;
         myfile.open("example.txt");
         
@@ -122,20 +136,16 @@ int main()
         for(int i=0; i < len(global_l); i++){
             myfile << "Nr " << i << " " << extract<int>(global_l[i]) << std::endl;
         }
-        
         myfile.close();
-        */
-        
-        
-        
     }
     
-    double time = T.elapsed();
+    double end = MPI_Wtime();
     
-    if (world.rank() == 0)
+    if (rank == 0)
     {
-        std::cout << "Time it takes " << time << std::endl;
+        std::cout << "The process took " << end - start << " seconds to run." << std::endl;
     }
+    MPI_Finalize();
     return 0;
 }
 

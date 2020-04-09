@@ -1,10 +1,11 @@
 #include <iostream>
-
 #include <fstream>
 #include <boost/python.hpp>
 #include <chrono>
-#include <boost/mpi/python/serialize.hpp>
+
+
 using namespace boost::python;
+
 
 int main(int argc, char *argv[])
 {
@@ -25,14 +26,7 @@ int main(int argc, char *argv[])
          "\n", main_namespace);
     
     PyObject* f = object(main_module.attr("f")).ptr();
-    object my_pickle = import("pickle");
 
-
-    PyObject* m_dumps = object(my_pickle.attr("dumps")).ptr();
-    PyObject* m_loads = object(my_pickle.attr("loads")).ptr();
-    PyObject* m_dump = object(my_pickle.attr("dump")).ptr();
-    PyObject* m_load = object(my_pickle.attr("load")).ptr();
-    
     auto start = std::chrono::high_resolution_clock::now();
 
     
@@ -40,7 +34,7 @@ int main(int argc, char *argv[])
 
     
     
-    
+    /*
     
     for (int j = 0; j < 10000; j++)
     {
@@ -50,8 +44,9 @@ int main(int argc, char *argv[])
             mlist[i] = call<int>(f,el);
         }
     }
-
+    */
     
+    =
     
                                                                             
     auto stop = std::chrono::high_resolution_clock::now();
