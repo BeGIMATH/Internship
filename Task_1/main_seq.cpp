@@ -32,10 +32,6 @@ int main(int argc, char *argv[])
     
     int el;
 
-    
-    
-    /*
-    
     for (int j = 0; j < 10000; j++)
     {
         for (int i = 0; i < 10000; ++i)
@@ -44,11 +40,7 @@ int main(int argc, char *argv[])
             mlist[i] = call<int>(f,el);
         }
     }
-    */
-    
-    =
-    
-                                                                            
+                                                        
     auto stop = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration<double>(stop - start).count();
     

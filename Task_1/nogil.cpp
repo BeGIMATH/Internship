@@ -1,100 +1,219 @@
-#include <iostream>
+// Author: Baruch Sterin <baruchs@gmail.com>
+
+#include <Python.h>
+
+#include <string>
 #include <vector>
 #include <boost/thread.hpp>
 #include <boost/python.hpp>
-int threads_to_use = 1;
-
+// initialize and clean up python
+#include <iostream>
 using namespace boost::python;
-class ScopedGILRelease {
-public:
-  inline ScopedGILRelease() { m_thread_state = PyEval_SaveThread(); }
-  inline ~ScopedGILRelease() { PyEval_RestoreThread(m_thread_state); m_thread_state = NULL; }
-private:
-  PyThreadState* m_thread_state;
+struct initialize
+{
+    initialize()
+    {
+        PyEval_InitThreads();
+        Py_Initialize();
+        
+    }
+
+    ~initialize()
+    {
+        Py_Finalize();
+    }
 };
 
-
-void do_stuff_in_thread(PyInterpreterState* interp)
+// allow other threads to run
+class enable_threads_scope
 {
-    // create a new thread state for the the sub interpreter interp
-    PyThreadState* ts = PyThreadState_New(interp);
+public:
+    enable_threads_scope()
+    {
+        _state = PyEval_SaveThread();
+    }
 
-    // make it the current thread state and acquire the GIL
-    PyEval_RestoreThread(ts);
+    ~enable_threads_scope()
+    {
+        PyEval_RestoreThread(_state);
+    }
 
-    // at this point:
-    // 1. You have the GIL
-    // 2. You have the right thread state - a new thread state (this thread was not created by python) in the context of interp
+private:
 
-    // PYTHON WORK HERE
+    PyThreadState* _state;
+};
 
-    // clear ts
-    PyThreadState_Clear(ts);
+// restore the thread state when the object goes out of scope
+class restore_tstate_scope
+{
+public:
 
-    // delete the current thread state and release the GIL
-    PyThreadState_DeleteCurrent();
+    restore_tstate_scope()
+    {
+        _ts = PyThreadState_Get();
+    }
+
+    ~restore_tstate_scope()
+    {
+        PyThreadState_Swap(_ts);
+    }
+
+private:
+
+    PyThreadState* _ts;
+};
+
+// swap the current thread state with ts, restore when the object goes out of scope
+class swap_tstate_scope
+{
+public:
+
+    swap_tstate_scope(PyThreadState* ts)
+    {
+        _ts = PyThreadState_Swap(ts);
+    }
+
+    ~swap_tstate_scope()
+    {
+        PyThreadState_Swap(_ts);
+    }
+
+private:
+
+    PyThreadState* _ts;
+};
+
+// create new thread state for interpreter interp, make it current, and clean up on destruction
+class thread_state
+{
+public:
+
+    thread_state(PyInterpreterState* interp)
+    {
+        _ts = PyThreadState_New(interp);
+        PyEval_RestoreThread(_ts);
+    }
+
+    ~thread_state()
+    {
+        PyThreadState_Clear(_ts);
+        PyThreadState_DeleteCurrent();
+    }
+
+    operator PyThreadState*()
+    {
+        return _ts;
+    }
+
+    static PyThreadState* current()
+    {
+        return PyThreadState_Get();
+    }
+
+private:
+
+    PyThreadState* _ts;
+};
+
+// represent a sub interpreter
+class sub_interpreter
+{
+public:
+
+    // perform the necessary setup and cleanup for a new thread running using a specific interpreter
+    struct thread_scope
+    {
+        thread_state _state;
+        swap_tstate_scope _swap{ _state };
+
+        thread_scope(PyInterpreterState* interp) :
+            _state(interp)
+        {
+        }
+    };
+
+    sub_interpreter()
+    {
+        restore_tstate_scope restore;
+
+        _ts = Py_NewInterpreter();
+    }
+
+    ~sub_interpreter()
+    {
+        if( _ts )
+        {
+            swap_tstate_scope sts(_ts);
+
+            Py_EndInterpreter(_ts);
+        }
+    }
+
+    PyInterpreterState* interp()
+    {
+        return _ts->interp;
+    }
+
+    static PyInterpreterState* current()
+    {
+        return thread_state::current()->interp;
+    }
+
+private:
+
+    PyThreadState* _ts;
+};
+
+// runs in a new thread
+void f(PyInterpreterState* interp, list l,int start_it)
+{
+  for(int i = start_it; i < start_it + 25; i++)
+    {
+        l[i] = 0;
+    
+}
 }
 
+int main()
+{
+    initialize init;
 
-void partial_change(int start_it, int chunk_size,list l)
-{ 
-    int a;
-    for (int i = start_it; i < start_it + chunk_size; i++)
-            {
-                
-                a =1;// extract<int>(l[i]);
-            }
-  
+    sub_interpreter s1;
+    sub_interpreter s2;
+    sub_interpreter s3;
+    sub_interpreter s4;
+
      
-}
+    list local_l_1;
+    int max_l = 100;
+    for(int i = 0; i < max_l; i++){
+        local_l_1.append(i);
+    }
+    list local_l_2;
+    for(int i = 0; i < max_l; i++){
+        local_l_2.append(i);
+    }
+    list local_l_3;
+    for(int i = 0; i < max_l; i++){
+        local_l_3.append(i);
+    }
+    list local_l_4;
+    for(int i = 0; i < max_l; i++){
+        local_l_4.append(i);
+    }
 
+    boost::thread t1{f, s1.interp(), local_l_1,0};
+    boost::thread t2{f, s2.interp(), local_l_2,0};
+    boost::thread t3{f, s3.interp(), local_l_3,0};
+    boost::thread t4{f, s4.interp(), local_l_4,0};
+     
+    enable_threads_scope t;
 
-int main(int argc, char *argv[]) 
-{
-  
-   
-  //PyEval_InitThreads();
-  Py_Initialize();
-  boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
-  
-  
-  list mlist;
-  for (int i = 0; i < 100; ++i)
-  {
-    mlist.append(boost::python::object(i));
-  }
-  
-  int lenght = len(mlist);
-  ScopedGILRelease release_gil = ScopedGILRelease();
-  //Py_BEGIN_ALLOW_THREADS
-  //int chunk = len(mlist) / threads_to_use;
-  
-  std::vector<boost::thread *> v_threads;
-  //int chunk_per_thread = len(mlist) / threads_to_use;
-  int chunk = 250;
-  for (int Start_it = 0; Start_it < 1000 ; Start_it += chunk)
-  {
-    
-    
-    
-    v_threads.push_back(new boost::thread(partial_change,Start_it, chunk, mlist));
-    
-  }
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();
 
-  for (int i = 0; i < threads_to_use; i++){
-      v_threads[i]->join();
-      delete v_threads[i];
-  }
-  /*
-  for(int i = 0; i < 100; i++){
-      std::cout << "Element "  << i << " " << extract<int>(mlist[i]) << std::endl;
-  }
-  */
-  //Py_END_ALLOW_THREADS
-   
-  ///nogil(threads_to_use,mlist);
-
-  boost::chrono::high_resolution_clock::time_point end = boost::chrono::high_resolution_clock::now();
-  std::cout << "Time taken: " << (end - start).count() * ((double) boost::chrono::high_resolution_clock::period::num / boost::chrono::high_resolution_clock::period::den) << std::endl;
-  
+    std::cout <<"finished " << std::endl;
+    return 0;
 }

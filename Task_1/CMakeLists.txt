@@ -24,8 +24,6 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS} ${MPI_INCLUDE_P
 ADD_EXECUTABLE(task1_seq main_seq.cpp)
 TARGET_LINK_LIBRARIES(task1_seq Boost::python Python3::Python Boost::mpi_python) 
 
-ADD_EXECUTABLE(task1_mpi main_mpi.cpp)
-TARGET_LINK_LIBRARIES(task1_mpi  Boost::python  Python3::Python Boost::mpi_python Boost::serialization Boost::system)  
 
 ADD_EXECUTABLE(task1_thread main_thread.cpp)
 TARGET_LINK_LIBRARIES(task1_thread Boost::chrono Boost::thread Boost::python  Python3::Python) 
@@ -33,8 +31,6 @@ TARGET_LINK_LIBRARIES(task1_thread Boost::chrono Boost::thread Boost::python  Py
 ADD_EXECUTABLE(nogil nogil.cpp)
 TARGET_LINK_LIBRARIES(nogil Boost::chrono Boost::thread Boost::python  Python3::Python) 
 
-#ADD_EXECUTABLE(task1_mint main_minterp.cpp)
-#TARGET_LINK_LIBRARIES(task1_mint Boost::chrono Boost::thread Boost::python  Python3::Python) 
 
 ADD_EXECUTABLE(task1_MPI main_MPI.cpp)
 TARGET_LINK_LIBRARIES(task1_MPI  Boost::python  Python3::Python Boost::system ${MPI_C_LIBRARIES})  
