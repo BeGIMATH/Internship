@@ -1,0 +1,20 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+SET(PYTHON_LIBRARY "$CONDA_PREFIX/lib")
+SET(PYTHON_INCLUDE_DIR "CONDA_PREFIX/include/python3.7m")
+FIND_PACKAGE(Python3 COMPONENTS Interpreter Development REQUIRED)
+
+SET(Boost_USE_STATIC_LIBS OFF)
+SET(Boost_USE_MULTITHREADED ON)
+SET(Boost_USE_STATIC_RUNTIME OFF)
+
+FIND_PACKAGE(Boost COMPONENTS REQUIRED python chrono system thread mpi)
+FIND_PACKAGE(PythonLibs)
+FIND_PACKAGE(MPI)
+
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS} ${MPI_INCLUDE_PATH})
+
+ADD_LIBRARy(benchmark benchmark.cpp)
+
+TARGET_LINK_LIBRARIES(benchmark  Boost::python  Python3::Python Boost::system Boost::thread Boost::chrono Boost::mpi ${MPI_C_LIBRARIES} )
+
