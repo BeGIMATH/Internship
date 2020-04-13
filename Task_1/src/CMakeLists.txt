@@ -18,3 +18,20 @@ ADD_LIBRARy(benchmark benchmark.cpp)
 
 TARGET_LINK_LIBRARIES(benchmark  Boost::python  Python3::Python Boost::system Boost::thread Boost::chrono Boost::mpi ${MPI_C_LIBRARIES} )
 
+message("Path: " ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../run)
+
+
+ADD_EXECUTABLE(task1_seq main_seq.cpp)
+TARGET_LINK_LIBRARIES(task1_seq  benchmark) 
+
+ADD_EXECUTABLE(task1_thread main_thread.cpp)
+TARGET_LINK_LIBRARIES(task1_thread  benchmark) 
+
+ADD_EXECUTABLE(task1_multi main_multi.cpp)
+TARGET_LINK_LIBRARIES(task1_multi  benchmark) 
+
+ADD_EXECUTABLE(task1_MPI main_MPI.cpp)
+TARGET_LINK_LIBRARIES(task1_MPI benchmark)
+
+FILE(COPY execute.sh DESTINATION ${CMAKE_BINARY_DIR}/../run)

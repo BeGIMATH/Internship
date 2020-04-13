@@ -11,3 +11,4 @@ object initialize_function(const char * mcode = code) {
     exec(mcode, main_namespace);
     return main_namespace["f"];
 }
+
