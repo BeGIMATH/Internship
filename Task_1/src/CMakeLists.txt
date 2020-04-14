@@ -16,7 +16,7 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS} ${MPI_INCLUDE_P
 
 ADD_LIBRARy(benchmark benchmark.cpp)
 
-TARGET_LINK_LIBRARIES(benchmark  Boost::python  Python3::Python Boost::system Boost::thread Boost::chrono Boost::mpi ${MPI_C_LIBRARIES} )
+TARGET_LINK_LIBRARIES(benchmark  Boost::python  Python3::Python Boost::system Boost::thread Boost::chrono ${MPI_C_LIBRARIES} )
 
 message("Path: " ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../run)

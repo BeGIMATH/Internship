@@ -1,7 +1,7 @@
 #include "tools.h"
 #include "pyth_object.h"
 #include "pyconfig.h"
-
+#include <fstream>
 boost::mutex mutex;
 
 void seq_function(int list_length){
@@ -78,9 +78,14 @@ void threads_function(int threads_to_use,int list_length){
   boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
   
   Py_BEGIN_ALLOW_THREADS
+
+
   for (int Start_it = 0; Start_it < list_length; Start_it += chunk_per_thread)
   {
     int chunk_size = chunk_per_thread;
+    if(Start_it + chunk_per_thread < list_length && Start_it + chunk_per_thread * 2 > list_length){
+            chunk_size = list_length - Start_it;
+        }
     t.push_back(new boost::thread(partial_change,Start_it, chunk_size, mlist)); 
   }
   
@@ -308,14 +313,16 @@ void threads_multi_function(int threads_to_use,int list_length)
     std::vector<boost::thread *> m_threads;
     list part_list[threads_to_use];
     
-    int chunk_size = list_length / threads_to_use;
+    int chunk_per_thread = list_length / threads_to_use;
  
-     
-    for (int start_val = 0, i = 0; start_val < list_length; start_val += chunk_size, i++)
+    
+    for (int start_val = 0, i = 0; start_val < list_length; start_val += chunk_per_thread, i++)
     {
-        int sums_to_do = chunk_size;
-
-        m_threads.push_back(new boost::thread(partial_change_multi, si[i].interp(), start_val, sums_to_do,&part_list[i],&mlist,i));
+        int chunk_size = chunk_per_thread;
+        if(start_val + chunk_per_thread < list_length && start_val + chunk_per_thread * 2 > list_length){
+            chunk_size = list_length - start_val;
+        }
+        m_threads.push_back(new boost::thread(partial_change_multi, si[i].interp(), start_val, chunk_size,&part_list[i],&mlist,i));
  
     }
     enable_threads_scope t;
@@ -352,7 +359,7 @@ void pure_mpi_function(int list_length)
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Status  status;
-     
+    
     Py_Initialize();
     
     object main_module = import("__main__");
@@ -385,19 +392,30 @@ void pure_mpi_function(int list_length)
         auto retval = boost::python::object(boost::python::handle<>(ps_Local_l));
         list mlist = call<list>(m_loads,retval);
 
-        int chunk = list_length/size;
-    
-        for (int i = 0; i < chunk; ++i)
-        {
+        int chunk_per_process = list_length/size;
+        int reminder = list_length % size;
+        int chunk = chunk_per_process;
+        
+        if ( (rank + 1)*chunk_per_process < list_length && (rank + 2)*chunk_per_process > list_length){
+                
+                for (int i = 0; i < chunk + reminder; ++i)
+                {
+                    il  = extract<int>(mlist[i + chunk*rank]);
+                    local_l.append(il);
+                }
+        }
+        else{
+            for (int i = 0; i < chunk; ++i)
+            {
                 il  = extract<int>(mlist[i + chunk*rank]);
                 local_l.append(il);
             }
-    
+        }
         
         
         int el;
         for(int j = 0; j < 10000; j++){
-             for (int i = 0; i < chunk; i++)
+             for (int i = 0; i < len(local_l); i++)
             {
                 el  = extract<int>(local_l[i]);
                 local_l[i] = call<int>(f.ptr(),el);
@@ -405,7 +423,7 @@ void pure_mpi_function(int list_length)
         }
           
         
-                         
+        
         std::string s_Local_l = call<std::string>(m_dumps,local_l);  
                                  
         
@@ -463,6 +481,15 @@ void pure_mpi_function(int list_length)
             list LOCAL_l = call<list>(m_loads,retval);
             global_l += LOCAL_l;
         }
+        std::ofstream myfile;
+        myfile.open("example.txt");
+        
+        
+        for(int i=0; i < len(global_l); i++){
+            myfile << "Nr " << i << " " << extract<int>(global_l[i]) << std::endl;
+        }
+        
+        myfile.close();
         
     }
     double end = MPI_Wtime();

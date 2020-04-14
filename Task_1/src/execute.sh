@@ -19,7 +19,7 @@ done
 
 echo "------------------- Parallel processing-------------------"
 
-for n in $(seq 2 2 $n_procs)
+for n 
 do
    mpirun -np $n ./task1_MPI
 done

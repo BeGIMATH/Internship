@@ -14,5 +14,5 @@ int main(int argc, char *argv[])
     int Len = sizeof(list_lengths)/sizeof(list_lengths[0]);
     for(int i = 0; i < Len; i++){
         threads_multi_function(thrds,list_lengths[i]);
-    }
+}
 }
