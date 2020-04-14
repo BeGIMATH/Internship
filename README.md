@@ -18,7 +18,6 @@ make -j 8
 ```
 
 Execute 
-
-```bash
-./task1
+cd ../run
+bash execute.sh
 ```
