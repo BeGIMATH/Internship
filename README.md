@@ -18,6 +18,8 @@ make -j 8
 ```
 
 Execute 
+''
+```bash
 cd ../run
 bash execute.sh
 ```
