@@ -22,29 +22,29 @@ message("Path: " ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../run)
 
 
-ADD_EXECUTABLE(task1_seq main_seq.cpp)
-TARGET_LINK_LIBRARIES(task1_seq  benchmark) 
+ADD_EXECUTABLE(bench_seq bench_seq.cpp)
+TARGET_LINK_LIBRARIES(bench_seq  benchmark) 
 
-ADD_EXECUTABLE(task1_thread main_thread.cpp)
-TARGET_LINK_LIBRARIES(task1_thread  benchmark) 
+ADD_EXECUTABLE(bench_thread bench_thread.cpp)
+TARGET_LINK_LIBRARIES(bench_thread  benchmark) 
 
-ADD_EXECUTABLE(task1_multi main_multi.cpp)
-TARGET_LINK_LIBRARIES(task1_multi  benchmark) 
+ADD_EXECUTABLE(bench_multi bench_multi.cpp)
+TARGET_LINK_LIBRARIES(bench_multi  benchmark) 
 
-ADD_EXECUTABLE(task1_MPI main_MPI.cpp)
-TARGET_LINK_LIBRARIES(task1_MPI benchmark)
+ADD_EXECUTABLE(bench_MPI bench_MPI.cpp)
+TARGET_LINK_LIBRARIES(bench_MPI benchmark)
 
-ADD_EXECUTABLE(task1_seq_opt main_seq_opt.cpp)
-TARGET_LINK_LIBRARIES(task1_seq_opt  benchmark) 
+ADD_EXECUTABLE(bench_seq_opt bench_seq_opt.cpp)
+TARGET_LINK_LIBRARIES(bench_seq_opt  benchmark) 
 
-ADD_EXECUTABLE(task1_thread_opt main_thread_opt.cpp)
-TARGET_LINK_LIBRARIES(task1_thread_opt  benchmark) 
+ADD_EXECUTABLE(bench_thread_opt bench_thread_opt.cpp)
+TARGET_LINK_LIBRARIES(bench_thread_opt  benchmark) 
 
-ADD_EXECUTABLE(task1_multi_opt main_multi_opt.cpp)
-TARGET_LINK_LIBRARIES(task1_multi_opt  benchmark) 
+ADD_EXECUTABLE(bench_multi_opt bench_multi_opt.cpp)
+TARGET_LINK_LIBRARIES(bench_multi_opt  benchmark) 
 
-ADD_EXECUTABLE(task1_MPI_opt main_MPI_opt.cpp)
-TARGET_LINK_LIBRARIES(task1_MPI_opt benchmark)
+ADD_EXECUTABLE(bench_MPI_opt bench_MPI_opt.cpp)
+TARGET_LINK_LIBRARIES(bench_MPI_opt benchmark)
 
 
 FILE(COPY execute.sh DESTINATION ${CMAKE_BINARY_DIR}/../run)

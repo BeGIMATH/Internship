@@ -3,50 +3,50 @@
 n_procs=$(echo $sudoPW|cat - /proc/cpuinfo|grep -m 1 "cpu cores"|awk '{print $ 4;}')
 
 echo "--------------------- Sequential --------------------"
-./task1_seq 
+./bench_seq 
 
 echo "----------------- Multithreading--------------------" 
 for n in $(seq 2 2 $n_procs)
 do
-   ./task1_thread $n
+   ./bench_thread $n
 done
 
 echo "-------- Multithreading with multiinterpreters--------"
 for n in $(seq 2 2 $n_procs)
 do
-   ./task1_multi $n
+   ./bench_multi $n
 done
 
 echo "-----------------Parallel processing-------------------"
 
 for n in $(seq 2 2 $n_procs)
 do
-   mpirun -np $n ./task1_MPI
+   mpirun -np $n ./bench_MPI
 done
 
 
 echo "------------------Optimized Version-------------------"
 
 echo "--------------------- Sequential --------------------"
-./task1_seq_opt
+./bench_seq_opt
 
 echo "----------------- Multithreading--------------------" 
 for n in $(seq 2 2 $n_procs)
 do
-   ./task1_thread_opt $n
+   ./bench_thread_opt $n
 done
 
 echo "-------- Multithreading with multiinterpreters--------"
 for n in $(seq 2 2 $n_procs)
 do
-   ./task1_multi_opt $n
+   ./bench_multi_opt $n
 done
 
 echo "-----------------Parallel processing-------------------"
 
 for n in $(seq 2 2 $n_procs)
 do
-   mpirun -np $n ./task1_MPI_opt
+   mpirun -np $n ./bench_MPI_opt
 done
 
 
