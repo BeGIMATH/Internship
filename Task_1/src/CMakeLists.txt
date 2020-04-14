@@ -34,4 +34,17 @@ TARGET_LINK_LIBRARIES(task1_multi  benchmark)
 ADD_EXECUTABLE(task1_MPI main_MPI.cpp)
 TARGET_LINK_LIBRARIES(task1_MPI benchmark)
 
+ADD_EXECUTABLE(task1_seq_opt main_seq_opt.cpp)
+TARGET_LINK_LIBRARIES(task1_seq_opt  benchmark) 
+
+ADD_EXECUTABLE(task1_thread_opt main_thread_opt.cpp)
+TARGET_LINK_LIBRARIES(task1_thread_opt  benchmark) 
+
+ADD_EXECUTABLE(task1_multi_opt main_multi_opt.cpp)
+TARGET_LINK_LIBRARIES(task1_multi_opt  benchmark) 
+
+ADD_EXECUTABLE(task1_MPI_opt main_MPI_opt.cpp)
+TARGET_LINK_LIBRARIES(task1_MPI_opt benchmark)
+
+
 FILE(COPY execute.sh DESTINATION ${CMAKE_BINARY_DIR}/../run)

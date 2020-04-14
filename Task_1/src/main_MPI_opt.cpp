@@ -7,7 +7,7 @@ int main()
     
     for(int i = 0; i < Len; i++)
     {
-        pure_mpi_function(list_lengths[i]);
+        pure_mpi_function_opt(list_lengths[i]);
         
     }
     
