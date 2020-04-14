@@ -10,10 +10,12 @@ int main(int argc, char *argv[])
     int thrds;
     thrds = atoi(argv[1]);
     
-    int list_lengths[3] = {1000,2000,1000};
+    int list_lengths[3] = {100,500,1000};
     int Len = sizeof(list_lengths)/sizeof(list_lengths[0]);
+    
     for(int i = 0; i < Len; i++){
         threads_function(thrds,list_lengths[i]);
     }
+    
     return 0;
 }

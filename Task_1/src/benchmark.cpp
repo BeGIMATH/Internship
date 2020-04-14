@@ -45,16 +45,17 @@ void partial_change(int start_it, int chunk_size,list l)
     PyGILState_Release(gstate);
     int el;
     gstate = PyGILState_Ensure();
+     
     for (int j = 0; j < 10000; ++j)
     {
-            
-        for (int i = start_it; i < start_it + chunk_size; i++)
+        for (int i = start_it; i < start_it + chunk_size ; i++)
             {
                 el  = extract<int>(l[i]);
                 l[i] = call<int>(f.ptr(),el);
             }
             
         }
+        
         PyGILState_Release(gstate);
     }
     
@@ -74,18 +75,20 @@ void threads_function(int threads_to_use,int list_length){
   }
   
   std::vector<boost::thread *> t;
-  int chunk_per_thread = list_length / threads_to_use;
+  int chunk_size = list_length / threads_to_use;
+  int remainder = list_length % threads_to_use;
   boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
   
   Py_BEGIN_ALLOW_THREADS
 
 
-  for (int Start_it = 0; Start_it < list_length; Start_it += chunk_per_thread)
+  for (int Start_it = 0; Start_it < list_length; Start_it += chunk_size)
   {
-    int chunk_size = chunk_per_thread;
-    if(Start_it + chunk_per_thread < list_length && Start_it + chunk_per_thread * 2 > list_length){
-            chunk_size = list_length - Start_it;
+    
+    if(Start_it + chunk_size < list_length && Start_it + chunk_size * 2 > list_length){
+            chunk_size = chunk_size + remainder;
         }
+        
     t.push_back(new boost::thread(partial_change,Start_it, chunk_size, mlist)); 
   }
   
@@ -97,6 +100,7 @@ void threads_function(int threads_to_use,int list_length){
       delete t[i];
   }
   Py_END_ALLOW_THREADS
+
   
   boost::chrono::high_resolution_clock::time_point end = boost::chrono::high_resolution_clock::now();
   std::cout << "List length " << list_length  << " nr of threads " << threads_to_use << " time " << (end - start).count() * ((double) boost::chrono::high_resolution_clock::period::num / boost::chrono::high_resolution_clock::period::den) << std::endl;
@@ -259,39 +263,41 @@ private:
 
 void partial_change_multi(PyInterpreterState* interp,int start_it,int chunk,list *final,list* l,int id)
 {
-  sub_interpreter::thread_scope scope(interp);
+    sub_interpreter::thread_scope scope(interp);
 
-  PyGILState_STATE gstate;
-  gstate = PyGILState_Ensure();    
-  object f = initialize_function();
-  PyGILState_Release(gstate);
-  list local_l;
-  list Local_l;
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();    
+    object f = initialize_function();
+    PyGILState_Release(gstate);
+    list local_l;
+    list Local_l;
   
-  int max_l = chunk;
-  mutex.lock();
-  Local_l += *l;
-  mutex.unlock();
+    
+    mutex.lock();
+    Local_l += *l;
+    mutex.unlock();
+    int il;
   
-  int il;
-  
-  
-        //printf("ready for loop %i\n", start_it);
-        int el;
-        for (int j = 0; j < 10000; ++j)
+    for (int i = start_it; i < start_it + chunk ; i++)
+    {
+        il  = extract<int>(Local_l[i]);
+        local_l.append(il);
+    }
+        
+    int el;
+    for (int j = 0; j < 10000; ++j)
+    {
+        for (int i = 0; i < chunk; i++)
         {
-            
-            for (int i = 0; i < max_l; i++)
-            {
-                el  = extract<int>(Local_l[i]);
-                Local_l[i] = call<int>(f.ptr(),el);
-            }
-            
+            el  = extract<int>(local_l[i]);
+            local_l[i] = call<int>(f.ptr(),el);
         }
+            
+    }
          
-        mutex.lock();
-        *final += Local_l;
-        mutex.unlock();
+    mutex.lock();
+    *final += local_l;
+    mutex.unlock();
         
 
 }
@@ -313,14 +319,14 @@ void threads_multi_function(int threads_to_use,int list_length)
     std::vector<boost::thread *> m_threads;
     list part_list[threads_to_use];
     
-    int chunk_per_thread = list_length / threads_to_use;
- 
+    int chunk_size = list_length / threads_to_use;
+    int remainder = list_length % threads_to_use;
     
-    for (int start_val = 0, i = 0; start_val < list_length; start_val += chunk_per_thread, i++)
+    for (int start_val = 0, i = 0; start_val < list_length; start_val += chunk_size, i++)
     {
-        int chunk_size = chunk_per_thread;
-        if(start_val + chunk_per_thread < list_length && start_val + chunk_per_thread * 2 > list_length){
-            chunk_size = list_length - start_val;
+        
+        if(start_val + chunk_size < list_length && start_val + chunk_size * 2 > list_length){
+            chunk_size = chunk_size + remainder;
         }
         m_threads.push_back(new boost::thread(partial_change_multi, si[i].interp(), start_val, chunk_size,&part_list[i],&mlist,i));
  
@@ -481,15 +487,6 @@ void pure_mpi_function(int list_length)
             list LOCAL_l = call<list>(m_loads,retval);
             global_l += LOCAL_l;
         }
-        std::ofstream myfile;
-        myfile.open("example.txt");
-        
-        
-        for(int i=0; i < len(global_l); i++){
-            myfile << "Nr " << i << " " << extract<int>(global_l[i]) << std::endl;
-        }
-        
-        myfile.close();
         
     }
     double end = MPI_Wtime();
