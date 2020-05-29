@@ -2,9 +2,16 @@ name: impulse_3
 
 channels:
   - conda-forge
+  - bioconda/label/cf201901 
+  - fredboudon
+
 
 dependencies:
   - boost
   - python=3.7
   - cmake
   - openmpi
+  - scoop
+  - openalea.mtg
+  - openalea.lpy
+  - openalea.plantgl
