@@ -7,7 +7,7 @@ from itertools import cycle
  
 
 
-def Max_depth_MTG_p_l(node, currentDepth = 0, parallelLevel = 2):
+def Max_depth_MTG_p_l(node, currentDepth = 0, parallelLevel = 4):
     mtg = shared.getConst('myTree')
     
     
@@ -66,7 +66,7 @@ import time
 if __name__ == '__main__':
     
     Mtg = MTG()
-    my_mtg  = simple_tree(Mtg, Mtg.root,nb_children = 4, nb_vertices=100000)
+    my_mtg  = simple_tree(Mtg, Mtg.root,nb_children = 4, nb_vertices=1000)
     
     shared.setConst(myTree=my_mtg)
     
