@@ -59,17 +59,21 @@ def postOrderIterative(root):
 		if (len(stack) <= 0): 
 				break
 
-# Driver pogram to test above function 
-root = Node(1) 
-root.left = Node(2) 
-root.right = Node(3) 
-root.left.left = Node(4) 
-root.left.right = Node(5) 
-root.right.left = Node(6) 
-root.right.right = Node(7) 
+# Python 3.x program to check if an array consists 
+# of even number 
+def contains_even_number(l): 
+	for ele in l: 
+		if ele % 2 == 0: 
+			print ("list contains an even number") 
+			break
 
-print("Post Order traversal of binary tree is")
-postOrderIterative(root) 
-print(ans) 
+	# This else executes only if break is NEVER 
+	# reached and loop terminated after all iterations. 
+	else:	 
+		print ("list does not contain an even number") 
 
-# This code is contributed by Nikhil Kumar Singh(nickzuck_007) 
+# Driver code 
+print ("For List 1:") 
+contains_even_number([1, 9, 8]) 
+print (" \nFor List 2:") 
+contains_even_number([1, 3, 5]) 

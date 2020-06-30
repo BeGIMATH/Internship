@@ -4,7 +4,7 @@ from openalea.mtg.traversal import *
 from scoop import futures, shared
 from itertools import cycle
 import numpy as np 
-
+import math
 
 class Priority_queue:
     def __init__(self,weight):
@@ -17,7 +17,7 @@ class Priority_queue:
 
     def percUp(self,i):
         while i // 2 > 0:
-            if self.weight[self.heapList[i]] < self.weight[self.heapList[i // 2]]:
+            if self.weight[self.heapList[i]] > self.weight[self.heapList[i // 2]]:
                 #Swap places
                 tmp = self.heapList[i // 2]
                 self.heapList[i // 2] = self.heapList[i]
@@ -46,6 +46,8 @@ class Priority_queue:
 """
 #Algorithm 1
 """
+### To be done ###
+
 def BF(T):
     pass
   
@@ -77,7 +79,7 @@ def SFC_BF(T,p):
 """
 
 #Clustering using post order traversal with priority queu
-def SFC_FF(tree,p):
+def SFC_FF(tree,p,c):
     vtx_id = tree.root
     C = [[] for i in range(p)]
     
@@ -89,27 +91,28 @@ def SFC_FF(tree,p):
     #Post order using a priority queue
     queue = Priority_queue(weight)
     queue.append(vtx_id)
-    
+    counter = 0
     while queue.is_not_Empty():
-        import pdb as pd 
-        pd.set_trace()
-        
-        vtx_id = queue.pop()
+        vtx_id = queue.last()
         
         for vid in tree.children(vtx_id):
             if vid not in visited:
                 queue.append(vid)
                 break
         else: # no child or all have been visited
-            yield vtx_id
+            counter += 1
             visited.add(vtx_id)
             queue.pop()
+            C[math.floor(counter/c)].append(vtx_id)
+    return C
 
-Mtg = MTG()
-my_mtg  = simple_tree(Mtg, Mtg.root,nb_children = 4, nb_vertices=100)
+from scipy.stats import poisson, binom 
 
-print(list(SFC_FF(my_mtg,10)))
+my_mtg = MTG()
+dist = poisson(1., loc=1).rvs
+random_tree(my_mtg,my_mtg.root, nb_children=dist,nb_vertices=99)
+#my_mtg  = simple_tree(Mtg, Mtg.root,nb_children = 4, nb_vertices=100)
 
-print(list(post_order2(my_mtg, Mtg.root)))
+clusters = SFC_FF(my_mtg,10,11)
 
 
