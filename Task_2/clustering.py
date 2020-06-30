@@ -76,7 +76,7 @@ def SFC_BF(T,p):
 #Algorithm 2
 """
 
-#Clustering using post order traversak with priority queu
+#Clustering using post order traversal with priority queu
 def SFC_FF(tree,p):
     vtx_id = tree.root
     C = [[] for i in range(p)]
@@ -94,10 +94,9 @@ def SFC_FF(tree,p):
         import pdb as pd 
         pd.set_trace()
         
-        vtx_id = queue.last()
+        vtx_id = queue.pop()
         
         for vid in tree.children(vtx_id):
-            print(vid)
             if vid not in visited:
                 queue.append(vid)
                 break
