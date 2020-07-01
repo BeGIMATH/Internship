@@ -48,26 +48,37 @@ class Priority_queue:
 """
 ### To be done ###
 
-def BF(T):
-    pass
+def change_parent(node):
+    dict[T.parent(node)] -= size 
   
-def SFC_BF(T,p):
+def SFC_BF(T,p,alpha):
     #Initializa the cluster
-    C = [[] for i in range(p)]
-    remain = np.zeros(p)
-    target = 0     
-    
-    for i in range(1,p):
-        target = c + remain[i-1]
-        remain[i] = target 
-        while(len(C[i]) < (1 - alpha/2)*target):
-            #Find the best subtree
-            tree = BF(T)
-            #Delet the best subtree from the given tree
-            T = T - tree 
-            #Add those nodes to the cluster
-            C[i-1] = C[i-1] + tree
-            remain[i] = remain[i] - len(tree)
+    C = [[] for i in range(p)]     
+    weight = np.zeros(len(T))
+    for v in post_order(T,T.root):
+        weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
+    node_dict = {i:weight[i] for i in range(len(T))}
+    sub = 0
+    target = len(T)/p
+    maxima = 0
+    for i in range(p): 
+        for key in node_dict:
+            maxima = max(maxima,node_dict[key])
+            sub = key
+            if maxima + 1 > target:
+                sub = key
+                break 
+        print("Nodes for a given subtree")
+        for node in T.sub_tree(sub,False):
+            
+            node_dict.pop(node)
+        C[i].append(list(T.sub_tree(sub)))
+        
+        node = sub 
+        while T.parent(node):
+            node_dict[T.parent(node)] -= node_dict[node]   
+            node = T.parent(node)
+        
     return C 
 
 
@@ -114,5 +125,6 @@ random_tree(my_mtg,my_mtg.root, nb_children=dist,nb_vertices=99)
 #my_mtg  = simple_tree(Mtg, Mtg.root,nb_children = 4, nb_vertices=100)
 
 clusters = SFC_FF(my_mtg,10,11)
+clusters1 = SFC_BF(my_mtg,10,0.4)
 
 
