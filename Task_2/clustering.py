@@ -66,7 +66,7 @@ class Priority_queue:
 ### To be done ###
 
  
-def SFC_BF_DICT(T,p,alpha):
+def SFC_BF_DICT(T,p,alpha=0):
     #Initialize the clusters
     C = [[] for i in range(p)]     
     #Create the weight array
@@ -76,22 +76,26 @@ def SFC_BF_DICT(T,p,alpha):
     #Compute the weights of all the nodes
     for v in A:
         weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
+    #Store all the nodes inside the dictionary
     node_dict = {i:weight[i] for i in range(len(T))}
     sub = 0
     target = len(T)/p
     maxima = 0
     for i in range(p): 
         for key in node_dict:
-            maxima = max(maxima,node_dict[key])
+            if weight[T.parent(key)] > remain:
+                sub = key
+            #maxima = max(maxima,node_dict[key])
             sub = key
             if maxima + 1 > target:
                 sub = key
                 break 
         print("Nodes for a given subtree")
-        for node in T.sub_tree(sub,True):
-            
+        
+        for node in T.sub_tree(sub,False):
+        
             node_dict.pop(node)
-        C[i].append(list(T.sub_tree(sub)))
+        C[i] += list(T.sub_tree(sub))
         
         node = sub 
         while T.parent(node):
@@ -106,72 +110,87 @@ def SFC_BF(T,p,c):
     remain = 0
     #Initialize the array of weights
     weight = np.zeros(len(T))
-    Nodes = list(post_order(T,T.root))
+
     #Compute the weights for all the nodes
-    for v in Nodes:
+    for v in list(post_order(T,T.root)):
         weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
     #Add only one subtree of the given size into the queue
-    Q = Priority_queue(weight,"up")
     
-    def BF(remain):
+    
+
+    def BF(remain,first_time,Q):
         #If the queue is not empty, search for the subtrees inside the queue
-        sub=0
+        sub = 0
         #Filling the queue for the first time
         sub_tree_size = 0
-        if Q.Empty():
+        
+        if first_time:
+            print("First-time")
+            Nodes = list(post_order(T,T.root))
+            print(len(Nodes))
             #Traverse the tree to find the ids of all the nodes
             for v in Nodes:
                 #Check if it is maxima else set it as a maximum
                 if T.parent(v):
-                    if weight[T.parent(v)] > remain:
+                    if weight[v] <= remain and weight[T.parent(v)] > remain:
                         Q.append(v)
                         sub = v
+                        #Check if it is optimal
+                        if weight[v] <= remain and weight[v] + 1 > remain:
+                            sub = v 
+                            break
             
-                if weight[v] <= remain and weight[v] + 1 > remain:
-                    sub = v 
-                    break
-               
-                
-            
+            Q.pop()
         else:
+            print("Second-time")
             node = Q.pop()
+            
             local_nodes = list(post_order(T,node))
             
             for v in local_nodes:
                 if T.parent(node):
-                    if weight[T.parent(v)] > remain:
+                    #Find a potential maximal subtree
+                    if weight[v] <= remain and weight[T.parent(v)] > remain:
                         sub = v
-            
-                    if weight[v] < remain and weight[v] + 1 > remain:
-                        sub = v 
-                        break
+                        #Check if it is optimal
+                        if weight[v] <= remain and weight[v] + 1 > remain:
+                            sub = v 
+                            break
         
         #Change the weights based on the subtree we removed
         sub1 = np.copy(sub)
+        
         for w in ancestors(T,sub):
             weight[w] -= weight[sub1]
             sub1 = w 
         #Remove the founded subtree
-        sub_tree_found = list(post_order(my_mtg,sub))
+        sub_tree_found = list(pre_order(my_mtg,sub))
+        
         if sub != T.root:
-            for vtx_id in sub_tree_found :      
+            for vtx_id in sub_tree_found:
+                #Remove the vertices from the weights array and also from the tree      
                 weight[vtx_id] = 0
-                T.remove_vertex(vtx_id)
-
-        print(len(sub_tree_found))
+                T.remove_tree(vtx_id)
         return sub_tree_found
         
-    
+    remain = 0
     for i in range(p):
-        target = c 
+        Qu = Priority_queue(weight,"up")
+        #Initializa the queue
+        target = c
         remain = target 
-        while len(C[i]) <= 10:
-            #Find and remove the founded subtree
-            sub = BF(remain)
+        first_time = True
+        print("cluster",i)
+        while len(C[i]) <= target:
             
-            C[i] += sub
-            print(len(sub)) 
+            #Find and remove the founded subtree
+            sub = BF(remain,first_time,Qu)
             remain = remain - len(sub)
+            #if remain < 1:
+            #   break
+            C[i] += sub
+            first_time = False
+
     return C
 
 
@@ -182,10 +201,11 @@ def SFC_BF(T,p,c):
 """
 
 #Clustering using post order traversal with priority queu
-def SFC_FF(tree,p,c):
+def SFC_FF(tree,p):
     vtx_id = tree.root
     C = [[] for i in range(p)]
     
+    c = int(len(tree)/p)
     
     weight = np.zeros(len(tree))
     for v in post_order(tree,tree.root):
@@ -206,7 +226,7 @@ def SFC_FF(tree,p,c):
             counter += 1
             visited.add(vtx_id)
             queue.pop()
-            C[math.floor(counter/c)].append(vtx_id)
+            C[math.ceil(counter/c)-1].append(vtx_id)
     return C
 
 from scipy.stats import poisson, binom 
@@ -215,8 +235,8 @@ my_mtg = MTG()
 dist = poisson(1., loc=1).rvs
 random_tree(my_mtg,my_mtg.root, nb_children=dist,nb_vertices=99)
 #my_mtg  = simple_tree(Mtg, Mtg.root,nb_children = 4, nb_vertices=100)
-c = int(100/10)
-clusters = SFC_FF(my_mtg,10,11)
+c = 100
+#clusters = SFC_BF_DICT(my_mtg,10)
 clusters1 = SFC_BF(my_mtg,c,10)
 """
 print("--------------------------Algorithm 2 ------------------")
@@ -224,6 +244,7 @@ for i in range(10):
 
     print("------------------Cluster--------------------------",i)
     print(clusters[i])
+
 print("-------------------------Algorithm 1 --------------------")
 for i in range(10):
     
