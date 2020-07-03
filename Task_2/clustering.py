@@ -8,25 +8,16 @@ import numpy as np
 import math
 
 class Priority_queue:
-    def __init__(self,weight,ordering):
+    def __init__(self,weight):
         self.heapList = [0]
         self.currentSize = 0
         self.weight = weight
-        self.ordering = ordering
+        
 
     def Empty(self):
         return self.currentSize == 0
 
     def percUp(self,i):
-        while i // 2 > 0:
-            if self.weight[self.heapList[i]] < self.weight[self.heapList[i // 2]]:
-                #Swap places
-                tmp = self.heapList[i // 2]
-                self.heapList[i // 2] = self.heapList[i]
-                self.heapList[i] = tmp 
-            i = i // 2
-    
-    def percDown(self,i):
         while i // 2 > 0:
             if self.weight[self.heapList[i]] > self.weight[self.heapList[i // 2]]:
                 #Swap places
@@ -35,22 +26,43 @@ class Priority_queue:
                 self.heapList[i] = tmp 
             i = i // 2
     
+    def percDown(self,i):
+      while (i * 2) <= self.currentSize:
+          mc = self.maxChild(i)
+          if self.weight[self.heapList[i]] < self.weight[self.heapList[mc]]:
+              tmp = self.heapList[i]
+              self.heapList[i] = self.heapList[mc]
+              self.heapList[mc] = tmp
+          i = mc
+
+    def maxChild(self,i):
+      if i * 2 + 1 > self.currentSize:
+          return i * 2
+      else:
+          if self.heapList[i*2] > self.heapList[i*2+1]:
+              return i * 2
+          else:
+              return i * 2 + 1
+
+    
+    
     def append(self,x):
         #Insert the element at the end of the list 
         self.heapList.append(x)
         #Increment the size variable
+        self.percUp(self.currentSize)
         self.currentSize = self.currentSize + 1 
         #Place the element based on its size
-        if self.ordering == "up":
-            self.percUp(self.currentSize)
-        elif self.ordering == "down":
-            self.percDown(self.currentSize)
+        
 
+    
     def pop(self):
-        retval = self.heapList[self.currentSize]
-        self.currentSize = self.currentSize - 1
-        self.heapList.pop()
-        return retval
+      retval = self.heapList[1]
+      self.heapList[1] = self.heapList[self.currentSize]
+      self.currentSize = self.currentSize - 1
+      self.heapList.pop()
+      self.percDown(1)
+      return retval
     
     def last(self):
         #Return the last element without removing from the queue
@@ -138,76 +150,83 @@ def SFC_FF(tree,p):
 
 
 
-def SFC_BF(T,p):
+def SFC_BF(T,p,alpha):
     #Initialize the cluster
     C = [[] for i in range(p)]
+    #Initialize the remain value
     remain = 0
     #Initialize the array of weights
     weight = np.zeros(len(T))
     
-    #Compute the weights for all the nodes
+    #Compute the weights for all the nodes, only once
     for v in list(post_order(T,T.root)):
         weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
-    #Add only one subtree of the given size into the queue
     
+    #Define the size of the cluster
     c = int(len(T)/p)
-    
+
     def BF(remain,first_time,Q):
-       
-        #If the queue is not empty, search for the subtrees inside the queue
-        sub = 0
-        #Filling the queue for the first time
-        sub_tree_size = 0
+        #Add into the queue only subtrees of size that have not been added before
+        sub = None
         
         if first_time:
             print("First-time")
+            
             Nodes = list(post_order(T,T.root))
-            print("Nodes left in the tree",len(Nodes))
-            #Traverse the tree to find the ids of all the nodes
+
+            print("Nodes left inside the tree", len(Nodes))
+            #Fill the queue by traversing the tree and finding the subtrees of size less than remain
             for v in Nodes:
                 #Check if it is maxima else set it as a maximum
                 if T.parent(v):
                     if weight[v] <= remain and weight[T.parent(v)] > remain:
                         Q.append(v)
-                        sub = v
+                        print("Weight of the subtree added",weight[v])
+                        
                         #Check if it is optimal
-                        if weight[v] <= remain and weight[v] + 0.5 > remain:
-                            sub = v 
+                        if weight[v] <= remain and weight[v] + 1 > remain:
+                            print("Found optimal subtree")
+                            Q.append(v) 
                             break
+            if len(Nodes) <= c:
+                sub = 0   
             if Q.size() > 0:
-                Q.pop()
+                sub = Q.pop()
         else:
             print("Second-time")
-            if Q.size() <= 0:
-                return
-            node = Q.pop()
             
-            local_nodes = list(post_order(T,node))
+            #Take a subtree from the queue and check if it has a mximal subtree
+            sub_tree_not_found = True 
+            sub_tree_size = 0
+            while sub_tree_not_found and Q.size() > 0:
+                
+                node = Q.pop()
             
-            for v in local_nodes:
-                if T.parent(node):
-                    #Find a potential maximal subtree
-                    if weight[v] <= remain and weight[T.parent(v)] > remain:
-                        sub = v
+                local_nodes = list(post_order(T,node))
+            
+                for v in local_nodes:
+                    if T.parent(v):
+                        #Find a potential maximal subtree
+                        if weight[v] <= remain and weight[T.parent(v)] > remain and weight[v] > sub_tree_size:
+                            sub_tree_size = weight[v]
+                            sub = v
+                        
                         #Check if it is optimal
                         if weight[v] <= remain and weight[v] + 1 > remain:
                             sub = v 
-                            break
+                            sub_tree_not_found = False
+                            
             
+        remove_weight = weight[sub]
         
-        #Change the weights based on the subtree we removed
-        sub1 = np.copy(sub)
-        #Change the weights
-        for w in ancestors(T,sub):
-            weight[w] -= weight[sub1]
-            sub1 = w 
+        for w in list(ancestors(T,sub)):
+            weight[w] = weight[w] - remove_weight
         #Remove the founded subtree
         sub_tree_found = list(pre_order(my_mtg,sub))
         print("Length of the founded subtree",len(sub_tree_found))
         if sub != T.root:
             for vtx_id in sub_tree_found:
                 #Remove the vertices from the weights array and also from the tree      
-                weight[vtx_id] = 0
                 T.remove_tree(vtx_id)
         return sub_tree_found
         
@@ -215,15 +234,15 @@ def SFC_BF(T,p):
     
     for i in range(p):
         #For each cluster initializa the queue from the begining
-        Qu = Priority_queue(weight,"up")
+        Qu = Priority_queue(weight)
        
         target = c
         remain = target 
         first_time = True
         print("cluster",i)
-        while len(C[i]) <= target:
-            if remain < 1:
-               break
+        
+        while len(C[i]) <= (1 - alpha/2)*target:
+            
             #Find and remove the founded subtree
             
             sub = BF(remain,first_time,Qu)
@@ -231,6 +250,7 @@ def SFC_BF(T,p):
             remain = remain - len(sub)
             
             C[i] += sub
+            
             first_time = False
 
     return C
@@ -247,5 +267,27 @@ dist = poisson(1., loc=1).rvs
 random_tree(my_mtg,my_mtg.root, nb_children=dist,nb_vertices=99)
 #my_mtg  = simple_tree(Mtg, Mtg.root,nb_children = 4, nb_vertices=100)
 
-#clusters = SFC_BF_DICT(my_mtg,10)
-clusters1 = SFC_BF(my_mtg,10)
+clusters = SFC_BF(my_mtg,10,0.1)
+#clusters1 = SFC_FF(my_mtg,10)
+
+for i in range(10):
+    print("---------------------------Cluster---------------",i)
+    print(clusters[i])
+"""
+
+A = list(post_order(my_mtg,my_mtg.root))
+
+weight = np.zeros(len(my_mtg))
+Q = Priority_queue(weight)
+#Compute the weights for all the nodes, only once
+for v in list(post_order(my_mtg,my_mtg.root)):
+    weight[v] = 1 + sum([weight[vid] for vid in my_mtg.children(v)])
+
+for i in range(20):
+    print(A[i],weight[A[i]])
+    Q.append(A[i])
+
+while Q.size() > 0:
+    print(Q.pop())
+
+"""
