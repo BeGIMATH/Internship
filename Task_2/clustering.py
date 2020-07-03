@@ -103,99 +103,6 @@ def SFC_BF_DICT(T,p,alpha=0):
             node = T.parent(node)
         
     return C 
-
-def SFC_BF(T,p,c):
-    #Initialize the cluster
-    C = [[] for i in range(p)]
-    remain = 0
-    #Initialize the array of weights
-    weight = np.zeros(len(T))
-
-    #Compute the weights for all the nodes
-    for v in list(post_order(T,T.root)):
-        weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
-    #Add only one subtree of the given size into the queue
-    
-    
-
-    def BF(remain,first_time,Q):
-        #If the queue is not empty, search for the subtrees inside the queue
-        sub = 0
-        #Filling the queue for the first time
-        sub_tree_size = 0
-        
-        if first_time:
-            print("First-time")
-            Nodes = list(post_order(T,T.root))
-            print(len(Nodes))
-            #Traverse the tree to find the ids of all the nodes
-            for v in Nodes:
-                #Check if it is maxima else set it as a maximum
-                if T.parent(v):
-                    if weight[v] <= remain and weight[T.parent(v)] > remain:
-                        Q.append(v)
-                        sub = v
-                        #Check if it is optimal
-                        if weight[v] <= remain and weight[v] + 1 > remain:
-                            sub = v 
-                            break
-            
-            Q.pop()
-        else:
-            print("Second-time")
-            node = Q.pop()
-            
-            local_nodes = list(post_order(T,node))
-            
-            for v in local_nodes:
-                if T.parent(node):
-                    #Find a potential maximal subtree
-                    if weight[v] <= remain and weight[T.parent(v)] > remain:
-                        sub = v
-                        #Check if it is optimal
-                        if weight[v] <= remain and weight[v] + 1 > remain:
-                            sub = v 
-                            break
-        
-        #Change the weights based on the subtree we removed
-        sub1 = np.copy(sub)
-        
-        for w in ancestors(T,sub):
-            weight[w] -= weight[sub1]
-            sub1 = w 
-        #Remove the founded subtree
-        sub_tree_found = list(pre_order(my_mtg,sub))
-        
-        if sub != T.root:
-            for vtx_id in sub_tree_found:
-                #Remove the vertices from the weights array and also from the tree      
-                weight[vtx_id] = 0
-                T.remove_tree(vtx_id)
-        return sub_tree_found
-        
-    remain = 0
-    for i in range(p):
-        Qu = Priority_queue(weight,"up")
-        #Initializa the queue
-        target = c
-        remain = target 
-        first_time = True
-        print("cluster",i)
-        while len(C[i]) <= target:
-            
-            #Find and remove the founded subtree
-            sub = BF(remain,first_time,Qu)
-            remain = remain - len(sub)
-            #if remain < 1:
-            #   break
-            C[i] += sub
-            first_time = False
-
-    return C
-
-
-
-
 """
 #Algorithm 2
 """
@@ -229,25 +136,116 @@ def SFC_FF(tree,p):
             C[math.ceil(counter/c)-1].append(vtx_id)
     return C
 
+
+
+def SFC_BF(T,p):
+    #Initialize the cluster
+    C = [[] for i in range(p)]
+    remain = 0
+    #Initialize the array of weights
+    weight = np.zeros(len(T))
+    
+    #Compute the weights for all the nodes
+    for v in list(post_order(T,T.root)):
+        weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
+    #Add only one subtree of the given size into the queue
+    
+    c = int(len(T)/p)
+    
+    def BF(remain,first_time,Q):
+       
+        #If the queue is not empty, search for the subtrees inside the queue
+        sub = 0
+        #Filling the queue for the first time
+        sub_tree_size = 0
+        
+        if first_time:
+            print("First-time")
+            Nodes = list(post_order(T,T.root))
+            print("Nodes left in the tree",len(Nodes))
+            #Traverse the tree to find the ids of all the nodes
+            for v in Nodes:
+                #Check if it is maxima else set it as a maximum
+                if T.parent(v):
+                    if weight[v] <= remain and weight[T.parent(v)] > remain:
+                        Q.append(v)
+                        sub = v
+                        #Check if it is optimal
+                        if weight[v] <= remain and weight[v] + 0.5 > remain:
+                            sub = v 
+                            break
+            if Q.size() > 0:
+                Q.pop()
+        else:
+            print("Second-time")
+            if Q.size() <= 0:
+                return
+            node = Q.pop()
+            
+            local_nodes = list(post_order(T,node))
+            
+            for v in local_nodes:
+                if T.parent(node):
+                    #Find a potential maximal subtree
+                    if weight[v] <= remain and weight[T.parent(v)] > remain:
+                        sub = v
+                        #Check if it is optimal
+                        if weight[v] <= remain and weight[v] + 1 > remain:
+                            sub = v 
+                            break
+            
+        
+        #Change the weights based on the subtree we removed
+        sub1 = np.copy(sub)
+        #Change the weights
+        for w in ancestors(T,sub):
+            weight[w] -= weight[sub1]
+            sub1 = w 
+        #Remove the founded subtree
+        sub_tree_found = list(pre_order(my_mtg,sub))
+        print("Length of the founded subtree",len(sub_tree_found))
+        if sub != T.root:
+            for vtx_id in sub_tree_found:
+                #Remove the vertices from the weights array and also from the tree      
+                weight[vtx_id] = 0
+                T.remove_tree(vtx_id)
+        return sub_tree_found
+        
+    remain = 0
+    
+    for i in range(p):
+        #For each cluster initializa the queue from the begining
+        Qu = Priority_queue(weight,"up")
+       
+        target = c
+        remain = target 
+        first_time = True
+        print("cluster",i)
+        while len(C[i]) <= target:
+            if remain < 1:
+               break
+            #Find and remove the founded subtree
+            
+            sub = BF(remain,first_time,Qu)
+            
+            remain = remain - len(sub)
+            
+            C[i] += sub
+            first_time = False
+
+    return C
+
+
+
+
+
+
 from scipy.stats import poisson, binom 
 
 my_mtg = MTG()
 dist = poisson(1., loc=1).rvs
 random_tree(my_mtg,my_mtg.root, nb_children=dist,nb_vertices=99)
 #my_mtg  = simple_tree(Mtg, Mtg.root,nb_children = 4, nb_vertices=100)
-c = 100
+
 #clusters = SFC_BF_DICT(my_mtg,10)
-clusters1 = SFC_BF(my_mtg,c,10)
-"""
-print("--------------------------Algorithm 2 ------------------")
-for i in range(10):
-
-    print("------------------Cluster--------------------------",i)
-    print(clusters[i])
-
-print("-------------------------Algorithm 1 --------------------")
-for i in range(10):
-    
-    print("-----------------Cluster---------------------------",i)
-    print(clusters1[i])
-"""
+clusters1 = SFC_BF(my_mtg,10)
