@@ -64,10 +64,6 @@ class Priority_queue:
     def last(self):
         return self.heapList[1]
 
-
-
-    
-
 """
 #Algorithm 1
 """
@@ -174,7 +170,6 @@ def SFC_BF(T,p,alpha):
         target = c
         remain = target 
         first_time = True
-        print("cluster",i)
         last_cluster = False
         while len(C[i]) <= (1 - alpha/2)*target:
             if i == p-1:
