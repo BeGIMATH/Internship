@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "chrono": "cpp",
-        "random": "cpp",
-        "*.ipp": "cpp",
-        "functional": "cpp",
-        "list": "cpp"
-    }
-}
