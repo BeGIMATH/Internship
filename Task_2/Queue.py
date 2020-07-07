@@ -11,11 +11,11 @@ import timeit
 import sys
 
 class Priority_queue:
-    def __init__(self,weights,ordering="max"):
+    def __init__(self,weights):
         self.heapList = [0]
         self.currentSize = 0
         self.weights = weights
-        self.ordering = ordering
+        
 
     def Empty(self):
         return self.currentSize == 0
@@ -53,8 +53,7 @@ class Priority_queue:
 
     def pop(self):
       retval = self.heapList[1]
-      if self.ordering == "max":
-        self.heapList[1] = self.heapList[self.currentSize]
+      self.heapList[1] = self.heapList[self.currentSize]
       self.currentSize = self.currentSize - 1
       self.heapList.pop()
       self.percDown(1)
@@ -118,13 +117,16 @@ def SFC_BF(T,p,alpha):
                         #Check if it is optimal
                         if weight[v] <= remain and weight[v] + 1 > remain:
                             break
-            if Q.size() > 0:
-                sub = Q.pop()
+            else:
+                print("No perfect subtree found")
+           
+            sub = Q.pop()
            
             
             index = weight[sub]
-            
-            #Update the queue
+           
+            #Problem localized
+            print(index)
             if remain - index > 0:
                 while weight[Q.last()] > remain - index:
                     node = Q.pop()
@@ -337,7 +339,7 @@ def SFC_FF(tree,p):
     def order_children(vid):
         ordered = []
         #Sort the children of a node using the priority queue
-        p_queue = Priority_queue(weight,"max")
+        p_queue = Priority_queue(weight)
         for vid in tree.children(vid):
             p_queue.append(vid)
         while p_queue.size() > 0:
