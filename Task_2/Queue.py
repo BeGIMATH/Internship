@@ -107,6 +107,7 @@ def SFC_BF(T,p,alpha):
             sub = T.root
         
         elif first_time:
+            print("First time")
             #pd.set_trace()
             #Fill the queue by traversing the tree and finding the subtrees of size less than remain
             for v in post_order(T,T.root):
@@ -114,31 +115,28 @@ def SFC_BF(T,p,alpha):
                 if T.parent(v):
                     if weight[v] <= remain and weight[T.parent(v)] > remain:
                         Q.append(v)
-                        #Check if it is optimal
-                        if weight[v] <= remain and weight[v] + 1 > remain:
+                        print("Subtree with root ",v,"and size ",weight[v])
+                        if weight[v] + 1 > remain:
                             break
-            else:
-                print("No perfect subtree found")
+            if Q.size() > 0:
+                sub = Q.pop()
+
+                index = weight[sub]
            
-            sub = Q.pop()
-           
-            
-            index = weight[sub]
-           
-            #Problem localized
-            print(index)
-            if remain - index > 0:
-                while weight[Q.last()] > remain - index:
-                    node = Q.pop()
-                    for v in pre_order(T,node):
-                        if T.parent(v):
-                            if weight[v] <= remain - index and weight[T.parent(v)] > remain - index:
-                                Q.append(v)
+                if remain - index > 0:
+                    while weight[Q.last()] > remain - index:
+                        node = Q.pop()
+                        for v in pre_order(T,node):
+                            if T.parent(v):
+                                if weight[v] <= remain - index and weight[T.parent(v)] > remain - index:
+                                    Q.append(v)
                                
                
             
-            for w in list(ancestors(T,sub)):
-                weight[w] = weight[w] - index
+                for w in list(ancestors(T,sub)):
+                    weight[w] = weight[w] - index
+            else:
+                remain = 0
         else:
         
            

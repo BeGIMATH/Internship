@@ -21,7 +21,7 @@ my_mtg = MTG()
 my_mtg1 = MTG()
 my_mtg2 = MTG()
 dist = poisson(1., loc=1).rvs
-simple_tree(my_mtg,my_mtg.root, nb_children=3,nb_vertices=999)
+random_tree(my_mtg,my_mtg.root, nb_children=dist,nb_vertices=99)
 #random_tree(my_mtg1,my_mtg1.root, nb_children=dist,nb_vertices=999)
 #random_tree(my_mtg2,my_mtg2.root, nb_children=dist,nb_vertices=999)
 
