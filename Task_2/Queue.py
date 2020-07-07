@@ -6,9 +6,6 @@ from scoop import futures, shared
 from itertools import cycle
 import numpy as np 
 import math
-import os
-import timeit
-import sys
 
 class Priority_queue:
     def __init__(self,weights):
@@ -65,60 +62,37 @@ class Priority_queue:
     
     def last(self):
         return self.heapList[1]
-    
-    def buildHeap(self,alist):
-      i = len(alist) // 2
-      self.currentSize = len(alist)
-      self.heapList = [0] + alist[:]
-      while (i > 0):
-          self.percDown(i)
-          i = i - 1
 
-"""
-#Algorithm 1
-"""
-### To be done ###
-
-
-import pdb as pd
-
-
-#Single fill
 def SFC_BF(T,p,alpha):
-    #Initialize the cluster
+    
     C = [[] for i in range(p)]
-    #Initialize the remain value
+    
     remain = 0
-    #Initialize the array of weights
+    
     weight = np.zeros(len(T))
     
-    #Compute the weights for all the nodes, only once
     for v in post_order(T,T.root):
         weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
     
-    #Define the size of the cluster
     c = int(len(T)/p)
 
     def BF(remain,first_time,Q,last_cluster):
-        #Add into the queue only subtrees of size that have not been added before
+        
         sub = None
         
         if last_cluster:
             sub = T.root
         
         elif first_time:
-            print("First time")
-            #pd.set_trace()
-            #Fill the queue by traversing the tree and finding the subtrees of size less than remain
             for v in post_order(T,T.root):
-                #Check if it is maxima else set it as a maximum
-                if T.parent(v):
+                
+                if T.parent(v) != None:
                     if weight[v] <= remain and weight[T.parent(v)] > remain:
                         Q.append(v)
-                        print("Subtree with root ",v,"and size ",weight[v])
                         if weight[v] + 1 > remain:
                             break
-            if Q.size() > 0:
+               
+            if Q.size() > -1:
                 sub = Q.pop()
 
                 index = weight[sub]
@@ -135,12 +109,9 @@ def SFC_BF(T,p,alpha):
             
                 for w in list(ancestors(T,sub)):
                     weight[w] = weight[w] - index
-            else:
-                remain = 0
-        else:
-        
-           
             
+        else:
+                    
             sub = Q.pop()
             index = weight[sub]
             
@@ -149,7 +120,6 @@ def SFC_BF(T,p,alpha):
                     node = Q.pop()   
                     for v in pre_order(T,node):
                         if T.parent(v):
-                            #Find a potential maximal subtree
                             if weight[v] <= remain - index and weight[T.parent(v)] > remain - index:
                                 Q.append(v)
 
@@ -159,23 +129,21 @@ def SFC_BF(T,p,alpha):
         
             for w in list(ancestors(T,sub)):
                 weight[w] = weight[w] - remove_weight
-        #Remove the founded subtree
+       
         
-        if sub == None:
-            return []
-
+        
         if sub != T.root:
             sub_tree_found = list(post_order(T,sub))
             T.remove_tree(sub)
         elif sub==0:
             sub_tree_found = list(post_order(T,sub))
-
+        elif sub == None:
+            sub_tree_found = []
         return sub_tree_found
         
     remain = 0
     
     for i in range(p):
-        #For each cluster initialize the queue from the begining
         Qu = Priority_queue(weight)
         
         target = c
@@ -186,60 +154,51 @@ def SFC_BF(T,p,alpha):
             if i == p-1:
                 last_cluster = True
             if remain < 1:
+               
                 break    
             
             sub = BF(remain,first_time,Qu,last_cluster)
-            
+                
             remain = remain - len(sub)
             
             C[i] += sub
             
             first_time = False
-            
-            
     return C
 
-def cluster_1(T,p,alpha):
-    #Initialize the cluster
+def SFC_BF_PAPER(T,p,alpha):
+    
     C = [[] for i in range(p)]
-    #Initialize the remain value
+    
     remain = 0
-    #Initialize the array of weights
+    
     weight = np.zeros(len(T))
     weight = weight.astype(int)
     
-    #Compute the weights for all the nodes, only once
+    
     for v in post_order(T,T.root):
         weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
     
         
     
-    #Define the size of the cluster
     c = int(len(T)/p)
     
     def BF(remain,first_time,Q,last_cluster):
-        #Add into the queue only subtrees of size that have not been added before
+       
         sub = None
         index = 0
         if last_cluster:
             sub = T.root
         
         elif first_time:
-            
-            
-            #Fill the queue by traversing the tree and finding the subtrees of size less than remain
             for v in post_order(T,T.root):
-                #Check if it is maxima else set it as a maximum
-                if T.parent(v):
+                if T.parent(v) != None:
                     if weight[v] <= remain and weight[T.parent(v)] > remain:
-                        #Found a maximal subtree and added it to the queue
                         if Q[weight[v]] == None:
                             Q[weight[v]] = v
-                        #Check if it is optimal
                         if weight[v] <= remain and weight[v] + 1 > remain:    
                             break
-            #Enter else only if we finish the for loop without finding a best fit subtree
-            
+
             i = len(Q) - 1
             while i > 1:
                 if Q[i] != None:
@@ -249,15 +208,12 @@ def cluster_1(T,p,alpha):
                     break 
                 i = i - 1
             
-            
-            #Update the queue
-            
             i = index - 1
             if remain - index > 0:
                 while i > remain - index:
                     for v in pre_order(T,Q[i]):
-                        if T.parent(v):
-                            if weight[v] < remain -index and weight[T.parent(v)] > remain - index:
+                        if T.parent(v) != None:
+                            if weight[v] <= remain -index and weight[T.parent(v)] > remain - index:
                                 Q[weight[v]] = v
                                 
                     Q[i] = None
@@ -279,15 +235,13 @@ def cluster_1(T,p,alpha):
                     break 
 
                 i = i - 1
-            #Weight of the founded subtree
             
-            #Update the queue
             i = index
             if remain - index > 0:
                 while i > remain - index:
                     for v in pre_order(T,Q[i]):
-                        if T.parent(v):
-                            if weight[v] < remain - index and weight[T.parent(v)] > remain - index:
+                        if T.parent(v) != None:
+                            if weight[v] <= remain - index and weight[T.parent(v)] > remain - index:
                                 Q[weight[v]] = v
                     Q[i] = None
                     i = i - 1    
@@ -296,7 +250,7 @@ def cluster_1(T,p,alpha):
           
             for w in list(ancestors(T,sub)):
                 weight[w] = weight[w] - remove_weight
-        #Remove the founded subtree
+       
 
         if sub != T.root:
             sub_tree_found = list(post_order(T,sub))
@@ -308,9 +262,6 @@ def cluster_1(T,p,alpha):
     remain = 0
     
     for i in range(p):
-        #For each cluster initialize the queue from the begining
-        
-        
         target = c
         remain = target
         first_time = True
@@ -320,7 +271,6 @@ def cluster_1(T,p,alpha):
             if i == p-1:
                 last_cluster = True
             
-            #Fills the queue if first time and searches for subtree if second time
             sub = BF(remain,first_time,Qu,last_cluster)
             if sub == None:
                 break
@@ -336,7 +286,6 @@ def SFC_FF(tree,p):
     visited = set([])
     def order_children(vid):
         ordered = []
-        #Sort the children of a node using the priority queue
         p_queue = Priority_queue(weight)
         for vid in tree.children(vid):
             p_queue.append(vid)
@@ -360,52 +309,11 @@ def SFC_FF(tree,p):
             if vid not in visited:
                 queue.append(vid)
                 break
-        else: # no child or all have been visited
+        else: 
             counter += 1
-            #print("Counter",counter)
             visited.add(vtx_id)
-            #print(math.ceil(counter/c)-1)
             C[math.ceil(counter/c)-1].append(vtx_id)
             queue.pop()
     return C
 
 
-
-def SFC_FF_1(tree,p):
-    vtx_id = tree.root
-    C = [[] for i in range(p)]
-    weight = np.zeros(len(tree))
-    visited = set([])
-    def order_children(vid):
-        ordered = []
-        #Sort the children of a node using the priority queue
-        p_queue = Priority_queue(weight)
-        for vid in tree.children(vid):
-            ordered.append(vid)
-        p_queue.buildHeap(ordered)
-        
-        return ordered
-
-    for v in post_order(tree,tree.root):
-        weight[v] = 1 + sum([weight[vid] for vid in tree.children(v)])
-    
-    c = int(len(tree)/p)
-    
-    
-    queue = [vtx_id]
-    
-    counter = 0
-    while queue:
-        vtx_id = queue[-1]
-        for vid in order_children(vtx_id):
-            if vid not in visited:
-                queue.append(vid)
-                break
-        else: # no child or all have been visited
-            counter += 1
-            #print("Counter",counter)
-            visited.add(vtx_id)
-            #print(math.ceil(counter/c)-1)
-            C[math.ceil(counter/c)-1].append(vtx_id)
-            queue.pop()
-    return C
