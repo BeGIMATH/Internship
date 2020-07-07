@@ -19,9 +19,11 @@ from scipy.stats import poisson, binom
 
 my_mtg = MTG()
 my_mtg1 = MTG()
+my_mtg2 = MTG()
 dist = poisson(1., loc=1).rvs
-random_tree(my_mtg,my_mtg.root, nb_children=dist,nb_vertices=999999)
-random_tree(my_mtg1,my_mtg1.root, nb_children=dist,nb_vertices=999999)
+random_tree(my_mtg,my_mtg.root, nb_children=dist,nb_vertices=999)
+random_tree(my_mtg1,my_mtg1.root, nb_children=dist,nb_vertices=999)
+random_tree(my_mtg2,my_mtg2.root, nb_children=dist,nb_vertices=999)
 
 
 t1 = timeit.default_timer()
@@ -32,5 +34,15 @@ t3 = timeit.default_timer()
 clusters_1 = SFC_FF(my_mtg1,10)
 t4 = timeit.default_timer()
 
+
+t5 = timeit.default_timer()
+clusters_2 = cluster_1(my_mtg2,10,0)
+t6 = timeit.default_timer()
+
+
+
 print("Time for clustering with the first algorithm ",t2-t1)
 print("Time for clustering with the second algorithm",t4-t3)
+print("Time for clustering with the third algorithm",t6-t5)
+
+
