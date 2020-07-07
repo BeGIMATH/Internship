@@ -21,7 +21,7 @@ my_mtg = MTG()
 my_mtg1 = MTG()
 my_mtg2 = MTG()
 dist = poisson(1., loc=1).rvs
-random_tree(my_mtg,my_mtg.root, nb_children=dist,nb_vertices=999)
+#random_tree(my_mtg,my_mtg.root, nb_children=dist,nb_vertices=999)
 random_tree(my_mtg1,my_mtg1.root, nb_children=dist,nb_vertices=999)
 random_tree(my_mtg2,my_mtg2.root, nb_children=dist,nb_vertices=999)
 
@@ -36,7 +36,7 @@ t4 = timeit.default_timer()
 
 
 t5 = timeit.default_timer()
-clusters_2 = cluster_1(my_mtg2,10,0)
+clusters_2 = SFC_FF_1(my_mtg2,10)
 t6 = timeit.default_timer()
 
 

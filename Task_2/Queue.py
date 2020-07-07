@@ -66,6 +66,14 @@ class Priority_queue:
     
     def last(self):
         return self.heapList[1]
+    
+    def buildHeap(self,alist):
+      i = len(alist) // 2
+      self.currentSize = len(alist)
+      self.heapList = [0] + alist[:]
+      while (i > 0):
+          self.percDown(i)
+          i = i - 1
 
 """
 #Algorithm 1
@@ -335,6 +343,47 @@ def SFC_FF(tree,p):
         while p_queue.size() > 0:
             node = p_queue.pop()
             ordered.append(node)
+        return ordered
+
+    for v in post_order(tree,tree.root):
+        weight[v] = 1 + sum([weight[vid] for vid in tree.children(v)])
+    
+    c = int(len(tree)/p)
+    
+    
+    queue = [vtx_id]
+    
+    counter = 0
+    while queue:
+        vtx_id = queue[-1]
+        for vid in order_children(vtx_id):
+            if vid not in visited:
+                queue.append(vid)
+                break
+        else: # no child or all have been visited
+            counter += 1
+            #print("Counter",counter)
+            visited.add(vtx_id)
+            #print(math.ceil(counter/c)-1)
+            C[math.ceil(counter/c)-1].append(vtx_id)
+            queue.pop()
+    return C
+
+
+
+def SFC_FF_1(tree,p):
+    vtx_id = tree.root
+    C = [[] for i in range(p)]
+    weight = np.zeros(len(tree))
+    visited = set([])
+    def order_children(vid):
+        ordered = []
+        #Sort the children of a node using the priority queue
+        p_queue = Priority_queue(weight)
+        for vid in tree.children(vid):
+            ordered.append(vid)
+        p_queue.buildHeap(ordered)
+        
         return ordered
 
     for v in post_order(tree,tree.root):
