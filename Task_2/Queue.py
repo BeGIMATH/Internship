@@ -75,7 +75,7 @@ def SFC_BF(T,p,alpha):
         weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
     
     c = int(len(T)/p)
-
+    color = set() # T.property('color')
     def BF(remain,first_time,Q,last_cluster):
         
         sub = None
@@ -84,15 +84,15 @@ def SFC_BF(T,p,alpha):
             sub = T.root
         
         elif first_time:
-            for v in post_order(T,T.root):
-                
+            for v in post_order2(T,T.root,pre_order_filter = lambda v: not (v in color)):
+               
                 if T.parent(v) != None:
                     if weight[v] <= remain and weight[T.parent(v)] > remain:
                         Q.append(v)
                         if weight[v] + 1 > remain:
                             break
                
-            if Q.size() > -1:
+            if Q.size() > 0:
                 sub = Q.pop()
 
                 index = weight[sub]
@@ -113,6 +113,7 @@ def SFC_BF(T,p,alpha):
         else:
                     
             sub = Q.pop()
+            color.add(sub)
             index = weight[sub]
             
             if remain - index > 0:
