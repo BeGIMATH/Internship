@@ -1,0 +1,127 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.css" type="text/css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis-network.min.js"> </script>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+
+<style type="text/css">
+
+        #mynetwork {
+            width: 900px;
+            height: 800px;
+            background-color: #ffffff;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+        }
+
+        
+
+        
+
+        
+</style>
+
+</head>
+
+<body>
+<div id = "mynetwork"></div>
+
+
+<script type="text/javascript">
+
+    // initialize global variables.
+    var edges;
+    var nodes;
+    var network; 
+    var container;
+    var options, data;
+
+    
+    // This method is responsible for drawing the graph, returns the drawn network
+    function drawGraph() {
+        var container = document.getElementById('mynetwork');
+        
+        
+
+        // parsing and collecting nodes and edges from the python
+        nodes = new vis.DataSet([{"borderWidth": 3, "color": "#fb7e81", "id": 1, "label": 1, "level": 0, "shape": "box", "title": "vid 1"}, {"borderWidth": 3, "color": "#fb7e81", "id": 3, "label": 3, "level": 1, "shape": "circle", "title": "vid 3"}, {"borderWidth": 3, "color": "#fb7e81", "id": 4, "label": 4, "level": 2, "shape": "circle", "title": "vid 4"}, {"borderWidth": 3, "color": "#fb7e81", "id": 5, "label": 5, "level": 2, "shape": "circle", "title": "vid 5"}, {"borderWidth": 3, "color": "#fb7e81", "id": 14, "label": 14, "level": 3, "shape": "circle", "title": "vid 14"}, {"borderWidth": 3, "color": "#fb7e81", "id": 15, "label": 15, "level": 3, "shape": "circle", "title": "vid 15"}, {"borderWidth": 3, "color": "#fb7e81", "id": 16, "label": 16, "level": 3, "shape": "circle", "title": "vid 16"}, {"borderWidth": 3, "color": "#fb7e81", "id": 30, "label": 30, "level": 4, "shape": "circle", "title": "vid 30"}, {"borderWidth": 3, "color": "#fb7e81", "id": 36, "label": 36, "level": 4, "shape": "circle", "title": "vid 36"}, {"borderWidth": 3, "color": "#fb7e81", "id": 71, "label": 71, "level": 4, "shape": "circle", "title": "vid 71"}, {"borderWidth": 3, "color": "#fb7e81", "id": 72, "label": 72, "level": 4, "shape": "circle", "title": "vid 72"}, {"borderWidth": 3, "color": "#fb7e81", "id": 73, "label": 73, "level": 4, "shape": "circle", "title": "vid 73"}]);
+        edges = new vis.DataSet([{"arrows": "to", "from": 1, "label": "\u003c", "to": 3, "width": 6}, {"arrows": "to", "from": 3, "label": "+", "to": 4, "width": 1}, {"arrows": "to", "from": 3, "label": "\u003c", "to": 5, "width": 6}, {"arrows": "to", "from": 5, "label": "+", "to": 14, "width": 1}, {"arrows": "to", "from": 5, "label": "+", "to": 15, "width": 1}, {"arrows": "to", "from": 5, "label": "\u003c", "to": 16, "width": 6}, {"arrows": "to", "from": 16, "label": "+", "to": 30, "width": 1}, {"arrows": "to", "from": 15, "label": "+", "to": 36, "width": 1}, {"arrows": "to", "from": 14, "label": "+", "to": 71, "width": 1}, {"arrows": "to", "from": 14, "label": "+", "to": 72, "width": 1}, {"arrows": "to", "from": 14, "label": "+", "to": 73, "width": 1}]);
+
+        // adding nodes and edges to the graph
+        data = {nodes: nodes, edges: edges};
+
+        var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": false,
+            "type": "continuous"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "layout": {
+        "hierarchical": {
+            "blockShifting": true,
+            "direction": "DU",
+            "edgeMinimization": true,
+            "enabled": true,
+            "levelSeparation": 150,
+            "parentCentralization": true,
+            "sortMethod": "hubsize",
+            "treeSpacing": 200
+        },
+        "improvedLayout": true,
+        "randomSeed": 0
+    },
+    "physics": {
+        "enabled": true,
+        "hierarchicalRepulsion": {
+            "centralGravity": 0.0,
+            "damping": 0.09,
+            "nodeDistance": 120,
+            "springConstant": 0.01,
+            "springLength": 100
+        },
+        "solver": "hierarchicalRepulsion",
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+        
+        
+
+        
+
+        network = new vis.Network(container, data, options);
+
+        
+
+
+        
+
+        return network;
+
+    }
+
+    drawGraph();
+
+</script>
+</body>
+</html>

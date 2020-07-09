@@ -8,6 +8,7 @@ import timeit
 import sys
 from oawidgets.mtg import plot
 from oawidgets.plantgl import PlantGL
+from openalea.mtg.draw import *
 sys.path.insert(0, '/Task_2/Queue.py/')
 
 from Queue import *
@@ -18,41 +19,29 @@ from oawidgets.plantgl import PlantGL
 
 my_mtg = MTG()
 dist = poisson(1., loc=1).rvs
+
 vid = my_mtg.add_component(my_mtg.root)
 
-my_mtg_1 = MTG()
+random_tree(my_mtg,vid,nb_children=dist,nb_vertices=999)
 
-random_tree(my_mtg,vid,nb_children=dist,nb_vertices=99)
-
-random_tree(my_mtg_1,my_mtg_1.root, nb_children=dist,nb_vertices=99)
-
+my_copy = my_mtg.copy()
 #random_tree(my_mtg,vid, nb_children=dist,nb_vertices=99)
 
-#plot(my_mtg)
-
+"""
 t5 = timeit.default_timer()
-clusters_2 = SFC_FF(my_mtg,10)
+clusters_1 = SFC_FF(my_mtg,vid,10)
 t6 = timeit.default_timer()
-
+"""
 t3 = timeit.default_timer()
-clusters_1 = SFC_BF(my_mtg_1,10,0)
+clusters_2 = hybrid_1(my_mtg,vid,10,3)
 t4 = timeit.default_timer()
-
 
 #print("Time for clustering with the first algorithm based on paper",t2-t1)
 print("Time for clustering with the first algorithm using the queue",t4-t3)
-print("Time for clustering with the second algorithm ",t6-t5)
+#print("Time for clustering with the second algorithm using queue removing the subtree",t6-t5)
 
 
 for i in range(10):
-    print("Cluster ",i,"using a queue")
-    print("-------------------")
-    print(clusters_1[i])
-
-
-
-    print("Cluster ",i,"using a weight ordering")
-    print("-------------------")
-    print(clusters_2[i])
-
-
+    print("------------------------")
+    print("Cluster",i)
+    print(len(clusters_2[i]))
