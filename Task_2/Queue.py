@@ -255,7 +255,7 @@ def SFC_BF_PAPER(T,p,alpha):
 
         if sub != T.root:
             sub_tree_found = list(post_order(T,sub))
-            T.remove_tree(sub)
+            #T.remove_tree(sub)
         elif sub == T.root:
             sub_tree_found = list(post_order(T,sub))
         return sub_tree_found
@@ -283,11 +283,14 @@ def SFC_BF_PAPER(T,p,alpha):
 def SFC_FF(tree,p):
     vtx_id = tree.root
     C = [[] for i in range(p)]
-    weight = np.zeros(len(tree))
+    weights = np.zeros(len(tree))
+    for v in post_order(tree,tree.root):
+        weights[v] = 1 + sum([weights[vid] for vid in tree.children(v)])
+    print(weights)
     visited = set([])
     def order_children(vid):
         ordered = []
-        p_queue = Priority_queue(weight)
+        p_queue = Priority_queue(weights)
         for vid in tree.children(vid):
             p_queue.append(vid)
         while p_queue.size() > 0:
@@ -295,8 +298,6 @@ def SFC_FF(tree,p):
             ordered.append(node)
         return ordered
 
-    for v in post_order(tree,tree.root):
-        weight[v] = 1 + sum([weight[vid] for vid in tree.children(v)])
     
     c = int(len(tree)/p)
     
