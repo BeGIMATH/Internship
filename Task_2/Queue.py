@@ -85,7 +85,7 @@ def SFC_BF(T,c_omponent,p,alpha):
         
         elif first_time:
         
-            for vid in post_order2(T,c_omponent,pre_order_filter = lambda v: v not in color):
+            for vid in post_order2(T,c_omponent):#pre_order_filter = lambda v: v not in color):
                 if T.parent(vid) != None:
                     if weight[vid] <= remain and weight[T.parent(vid)] > remain:
                         Q.append(vid)
@@ -236,47 +236,6 @@ def weighted_postorder(tree,c_omponent,weights):
             queue.pop()
 
     
-def hybrid(T,c_omponent,p,alpha):
-    
-    C = [[] for i in range(p)]
-    
-    
-    weight = np.zeros(len(T))
-    
-    for v in post_order(T,c_omponent):
-        weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
-        
-    c = int(len(T)/p)
-    target = c
-    
-    def BF(last_cluster):
-        
-        sub = None
-        if last_cluster:
-            sub = c_omponent
-        sub_tree_size = 0
-        
-        for vid in weighted_postorder(T,c_omponent,weight):
-            if weight[vid] >= target - alpha and weight[vid] <= target + alpha:
-                sub = vid
-                print("Found a good fit subtree of size ",weight[sub])
-                break
-          
-        if sub != c_omponent:   
-            sub_tree_found = list(post_order(T,sub))
-            T.remove_tree(sub)
-        elif sub==c_omponent:
-            sub_tree_found = list(post_order2(T,c_omponent))       
-        return sub_tree_found
-    last_cluster = False
-    for i in range(p):
-        
-        if i == p-1:
-            last_cluster = True
-        print("Finding a subtree for cluster ",i)
-        C[i] = BF(last_cluster)
-    return C
-
 
 def hybrid_1(T,c_omponent,p,alpha):
     
@@ -301,9 +260,9 @@ def hybrid_1(T,c_omponent,p,alpha):
         
         
         else:
-            A = list(weighted_postorder(T,c_omponent,weight))
             
-            for vid in A:
+            
+            for vid in weighted_postorder(T,c_omponent,weight):
                 if T.parent(vid) != None:
                     if weight[vid] <= remain + alpha and weight[T.parent(vid)] > remain:
                         Q.append(vid)
@@ -346,4 +305,69 @@ def hybrid_1(T,c_omponent,p,alpha):
         C[i] += sub
         remain = remain -len(sub)
         print("Remain ",remain)
+    return C
+
+def SFC_BF_1(T,c_omponent,p,alpha):
+    
+    C = [[] for i in range(p)]
+    
+    remain = 0
+    
+    weight = np.zeros(len(T))
+    
+    for v in post_order(T,c_omponent):
+        weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
+    
+    c = int(len(T)/p)
+    color = set()
+    def BF(remain,Q,last_cluster):
+        
+        sub = None
+        
+        if last_cluster:
+            sub = c_omponent
+        
+        else:
+          
+            for vid in post_order(T,c_omponent):#pre_order_filter = lambda v: v not in color):
+                
+                if T.parent(vid) != None:
+                    if weight[vid] <= (1+alpha)*remain  and weight[T.parent(vid)] > remain + alpha:
+                        Q.append(vid)
+                        if weight[vid] > (1-alpha/2)*remain:
+                            break
+               
+            if Q.size() > 0:
+                sub = Q.pop()
+                index = weight[sub]
+                for w in list(ancestors(T,sub)):
+                    weight[w] = weight[w] - index
+               
+                               
+
+        if sub != c_omponent:   
+            sub_tree_found = list(post_order(T,sub))
+        
+            T.remove_tree(sub)
+        elif sub==c_omponent:
+            sub_tree_found = list(post_order2(T,c_omponent,pre_order_filter = lambda v: v not in color))        
+        return sub_tree_found
+        
+    remain = 0
+    last_cluster = False
+    for i in range(p):
+        Qu = Priority_queue(weight)
+        
+        target = c
+        if i == p-1:
+            last_cluster = True
+            
+            
+        sub = BF(target,Qu,last_cluster)
+                
+        
+            
+        C[i] += sub
+            
+        #first_time = False
     return C
