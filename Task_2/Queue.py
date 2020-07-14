@@ -85,7 +85,7 @@ def SFC_BF(T,c_omponent,p,alpha):
         
         elif first_time:
         
-            for vid in post_order2(T,c_omponent):#pre_order_filter = lambda v: v not in color):
+            for vid in post_order(T,c_omponent):#pre_order_filter = lambda v: v not in color):
                 if T.parent(vid) != None:
                     if weight[vid] <= remain and weight[T.parent(vid)] > remain:
                         Q.append(vid)
@@ -137,7 +137,7 @@ def SFC_BF(T,c_omponent,p,alpha):
         
             T.remove_tree(sub)
         elif sub==c_omponent:
-            sub_tree_found = list(post_order2(T,c_omponent,pre_order_filter = lambda v: v not in color))        
+            sub_tree_found = list(post_order2(T,c_omponent))#,pre_order_filter = lambda v: v not in color))        
         return sub_tree_found
         
     remain = 0
@@ -207,105 +207,6 @@ def SFC_FF(tree,c_omponent,p):
             queue.pop()
     return C
 
-def weighted_postorder(tree,c_omponent,weights):
-    vtx_id = c_omponent
-    visited = set([])
-    def order_children(vid):
-        ordered = []
-        p_queue = Priority_queue(weights)
-        for vid in tree.children(vid):
-            p_queue.append(vid)
-        while p_queue.size() > 0:
-            node = p_queue.pop()
-            ordered.append(node)
-        return ordered
-
- 
-    queue = [vtx_id]
-    
-    
-    while queue:
-        vtx_id = queue[-1]
-        for vid in order_children(vtx_id):
-            if vid not in visited:
-                queue.append(vid)
-                break
-        else: 
-            yield vtx_id
-            visited.add(vtx_id)
-            queue.pop()
-
-    
-
-def hybrid_1(T,c_omponent,p,alpha):
-    
-    C = [[] for i in range(p)]
-    
-    remain = 0
-    
-    weight = np.zeros(len(T))
-    
-    for v in post_order(T,c_omponent):
-        weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
-    
-    c = int(len(T)/p)
-    color = set()
-    
-    def BF(remain,Q,last_cluster):
-        
-        sub = None
-        
-        if last_cluster:
-            sub = c_omponent
-        
-        
-        else:
-            
-            
-            for vid in weighted_postorder(T,c_omponent,weight):
-                if T.parent(vid) != None:
-                    if weight[vid] <= remain + alpha and weight[T.parent(vid)] > remain:
-                        Q.append(vid)
-                        print("Found a subtree of size", weight[vid])
-                        if weight[vid] + 1 > remain :
-                            print("Found a perfect subtree of size",weight[vid])
-                            break
-               
-            
-            sub = Q.pop()    
-            
-                               
-               
-            index = weight[sub]
-            for w in list(ancestors(T,sub)):
-                weight[w] = weight[w] - index 
-        
-        if sub != c_omponent:   
-            sub_tree_found = list(post_order(T,sub))
-            T.remove_tree(sub)
-        elif sub==c_omponent:
-            sub_tree_found = list(post_order(T,c_omponent))
-        return sub_tree_found
-        
-    remain = 0
-    
-    last_cluster = False
-    for i in range(p):
-        Qu = Priority_queue(weight)
-        print("-----------------------------")
-        print("Cluster ",i)
-        target = c 
-        remain = target
-       
-        
-            
-        if i == p-1:
-            last_cluster = True
-        sub = BF(remain,Qu,last_cluster)            
-        C[i] += sub
-        remain = remain -len(sub)
-        print("Remain ",remain)
-    return C
 
 def SFC_BF_1(T,c_omponent,p,alpha):
     
@@ -371,3 +272,4 @@ def SFC_BF_1(T,c_omponent,p,alpha):
             
         #first_time = False
     return C
+
