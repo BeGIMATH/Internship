@@ -29,7 +29,6 @@ vid = my_mtg.add_component(my_mtg.root)
 random_tree(my_mtg,vid,nb_children=dist,nb_vertices=99)
 
 
-my_copy = my_mtg.copy()
 #random_tree(my_mtg,vid, nb_children=dist,nb_vertices=99)
 
 """
@@ -39,17 +38,27 @@ t6 = timeit.default_timer()
 """
 p = 10
 t3 = timeit.default_timer()
-clusters_2 = Best_Fit_Clustering_2(my_mtg,vid,p,0.4)
+Best_Fit_Clustering_1(my_mtg,vid,p,0.4)
 t4 = timeit.default_timer()
 
 #print("Time for clustering with the first algorithm based on paper",t2-t1)
 print("Time for clustering with the first algorithm using the queue",t4-t3)
 #print("Time for clustering with the second algorithm using queue removing the subtree",t6-t5)
-
-
+#color = my_mtg.property('cluster')
+#print(color)
+"""
 for i in range(p):
     print("------------------------")
     print("Cluster",i,"with lenght",len(clusters_2[i]))
     print("with nodes ",clusters_2[i])
-    
-plot_clusters(my_copy,cluster=clusters_2)
+""" 
+#plot_clusters(my_copy,cluster=clusters_2)
+cluster = my_mtg.property('cluster')
+print("Clusters",cluster)
+groups = my_mtg.property('color')
+for i in range(p):
+    for j in [k for k,v in cluster.items() if v == i]:
+        groups[j] = i
+        #print("Node ",j,"belongs to cluster ",i)
+
+print(groups)
