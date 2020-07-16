@@ -1,69 +1,120 @@
-from openalea.mtg.mtg import *
-from openalea.mtg.algo import ancestors
-from openalea.mtg.io import *
-from openalea.mtg.traversal import *
-from scoop import futures, shared
-from itertools import cycle
-import numpy as np 
-import math
+from Queue import *
 
-class Priority_queue:
-    def __init__(self,weights):
-        self.heapList = [0]
-        self.currentSize = 0
-        self.weights = weights
-        
-
-    def Empty(self):
-        return self.currentSize == 0
-
-    def percUp(self,i):
-        while i // 2 > 0:
-          if self.weights[self.heapList[i]] > self.weights[self.heapList[i // 2]]:
-             tmp = self.heapList[i // 2]
-             self.heapList[i // 2] = self.heapList[i]
-             self.heapList[i] = tmp
-          i = i // 2
-
-    def append(self,k):
-      self.heapList.append(k)
-      self.currentSize = self.currentSize + 1
-      self.percUp(self.currentSize)
-
-    def percDown(self,i):
-      while (i * 2) <= self.currentSize:
-          mc = self.maxChild(i)
-          if self.weights[self.heapList[i]] < self.weights[self.heapList[mc]]:
-              tmp = self.heapList[i]
-              self.heapList[i] = self.heapList[mc]
-              self.heapList[mc] = tmp
-          i = mc
-
-    def maxChild(self,i):
-      if i * 2 + 1 > self.currentSize:
-          return i * 2
-      else:
-          if self.weights[self.heapList[i*2]] > self.weights[self.heapList[i*2+1]]:
-              return i * 2
-          else:
-              return i * 2 + 1
-
-    def pop(self):
-      retval = self.heapList[1]
-      self.heapList[1] = self.heapList[self.currentSize]
-      self.currentSize = self.currentSize - 1
-      self.heapList.pop()
-      self.percDown(1)
-      return retval
-
-      
-    def size(self):
-      return self.currentSize
+def Best_Fit_Clustering_Paper(T,p,alpha):
     
-    def last(self):
-        return self.heapList[1]
+    C = [[] for i in range(p)]
+    
+    remain = 0
+    
+    weight = np.zeros(len(T))
+    weight = weight.astype(int)
+    
+    
+    for v in post_order(T,T.root):
+        weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
+    
+        
+    
+    c = int(len(T)/p)
+    
+    def BF(remain,first_time,Q,last_cluster):
+       
+        sub = None
+        index = 0
+        if last_cluster:
+            sub = T.root
+        
+        elif first_time:
+            for v in post_order(T,T.root):
+                if T.parent(v) != None:
+                    if weight[v] <= remain and weight[T.parent(v)] > remain:
+                        if Q[weight[v]] == None:
+                            Q[weight[v]] = v
+                        if weight[v] <= remain and weight[v] + 1 > remain:    
+                            break
 
-def SFC_BF(T,c_omponent,p,alpha):
+            i = len(Q) - 1
+            while i > 1:
+                if Q[i] != None:
+                    index = i
+                    sub = Q[index]
+                    Q[i] = None
+                    break 
+                i = i - 1
+            
+            i = index - 1
+            if remain - index > 0:
+                while i > remain - index:
+                    for v in pre_order(T,Q[i]):
+                        if T.parent(v) != None:
+                            if weight[v] <= remain -index and weight[T.parent(v)] > remain - index:
+                                Q[weight[v]] = v
+                                
+                    Q[i] = None
+                    i = i-1
+            
+            
+            remove_weight = index
+        
+            for w in list(ancestors(T,sub)):
+                weight[w] = weight[w] - remove_weight
+           
+        else:
+            i = remain
+            while i > 0:
+                if Q[i] != None:
+                    index = i
+                    sub = Q[i] 
+                    Q[i] = None
+                    break 
+
+                i = i - 1
+            
+            i = index
+            if remain - index > 0:
+                while i > remain - index:
+                    for v in pre_order(T,Q[i]):
+                        if T.parent(v) != None:
+                            if weight[v] <= remain - index and weight[T.parent(v)] > remain - index:
+                                Q[weight[v]] = v
+                    Q[i] = None
+                    i = i - 1    
+    
+            remove_weight = index
+          
+            for w in list(ancestors(T,sub)):
+                weight[w] = weight[w] - remove_weight
+       
+
+        if sub != T.root:
+            sub_tree_found = list(post_order(T,sub))
+            #T.remove_tree(sub)
+        elif sub == T.root:
+            sub_tree_found = list(post_order(T,sub))
+        return sub_tree_found
+        
+    remain = 0
+    
+    for i in range(p):
+        target = c
+        remain = target
+        first_time = True
+        last_cluster = False
+        Qu = [None for i in range(remain+1)]
+        while len(C[i]) < (1 - alpha/2)*target:
+            if i == p-1:
+                last_cluster = True
+            
+            sub = BF(remain,first_time,Qu,last_cluster)
+            if sub == None:
+                break
+            remain = remain - len(sub)
+            C[i] += sub
+            first_time = False
+    return C
+
+
+def Best_Fit_clustering(T,c_omponent,p,alpha):
     
     C = [[] for i in range(p)]
     
@@ -76,7 +127,7 @@ def SFC_BF(T,c_omponent,p,alpha):
     
     c = int(len(T)/p)
     color = set()
-    def BF(remain,first_time,Q,last_cluster):
+    def Best_Fit(remain,first_time,Q,last_cluster):
         
         sub = None
         
@@ -156,7 +207,7 @@ def SFC_BF(T,c_omponent,p,alpha):
             if remain < 1:
                 break    
             
-            sub = BF(remain,first_time,Qu,last_cluster)
+            sub = Best_Fit(remain,first_time,Qu,last_cluster)
                 
             remain = remain - len(sub)
             
@@ -169,7 +220,7 @@ def SFC_BF(T,c_omponent,p,alpha):
 
 
 
-def SFC_FF(tree,c_omponent,p):
+def First_Fit_Clustering(tree,c_omponent,p):
     vtx_id = c_omponent
     C = [[] for i in range(p)]
     weights = np.zeros(len(tree))
@@ -208,7 +259,7 @@ def SFC_FF(tree,c_omponent,p):
     return C
 
 
-def SFC_BF_1(T,c_omponent,p,alpha):
+def Best_Fit_Clustering_1(T,c_omponent,p,alpha):
     
     C = [[] for i in range(p)]
     
@@ -221,7 +272,7 @@ def SFC_BF_1(T,c_omponent,p,alpha):
     
     c = int(len(T)/p)
     color = set()
-    def BF(remain,Q,last_cluster):
+    def Best_Fit(remain,Q,last_cluster):
         
         sub = None
         
@@ -264,7 +315,7 @@ def SFC_BF_1(T,c_omponent,p,alpha):
             last_cluster = True
             
             
-        sub = BF(target,Qu,last_cluster)
+        sub = Best_Fit(target,Qu,last_cluster)
                 
         
             
@@ -273,7 +324,7 @@ def SFC_BF_1(T,c_omponent,p,alpha):
         #first_time = False
     return C
 
-def SFC_BF_MTG(T,p,alpha):
+def Best_Fit_Clustering_MTG(T,p,alpha):
     
     C = [[] for i in range(p)]
     
@@ -292,7 +343,7 @@ def SFC_BF_MTG(T,p,alpha):
     
     c = int(len(T)/p)
     color = set()
-    def BF(remain,Q,last_cluster):
+    def Best_Fit(remain,Q,last_cluster):
         
         sub = None
         
@@ -334,7 +385,7 @@ def SFC_BF_MTG(T,p,alpha):
             last_cluster = True
             
             
-        sub = BF(target,Qu,last_cluster)
+        sub = Best_Fit(target,Qu,last_cluster)
                 
         
             
@@ -359,7 +410,7 @@ def level_order(T,vtx_id):
 
 
 
-def SFC_BF_2(T,c_omponent,p,alpha):
+def Best_Fit_Clustering_2(T,c_omponent,p,alpha):
     
     C = [[] for i in range(p)]
     
@@ -372,7 +423,7 @@ def SFC_BF_2(T,c_omponent,p,alpha):
     
     c = int(len(T)/p)
     color = set()
-    def BF(remain,Q,last_cluster):
+    def Best_Fit(remain,Q,last_cluster):
         
         sub = None
         
@@ -382,7 +433,6 @@ def SFC_BF_2(T,c_omponent,p,alpha):
         else:
           
             for vid in level_order(T,c_omponent):#pre_order_filter = lambda v: v not in color):
-                
                 if T.parent(vid) != None:
                     if weight[vid] <= (1+alpha)*remain  and weight[T.parent(vid)] > remain + alpha:
                         Q.append(vid)
@@ -415,7 +465,7 @@ def SFC_BF_2(T,c_omponent,p,alpha):
             last_cluster = True
             
             
-        sub = BF(target,Qu,last_cluster)
+        sub = Best_Fit(target,Qu,last_cluster)
                 
         
             
@@ -425,7 +475,7 @@ def SFC_BF_2(T,c_omponent,p,alpha):
     return C
 
 
-def SFC_BF_MTG_1(T,p,alpha):
+def Best_Fit_Clustering_MTG_1(T,p,alpha):
     
     C = [[] for i in range(p)]
     
@@ -494,3 +544,90 @@ def SFC_BF_MTG_1(T,p,alpha):
             
         #first_time = False
     return C
+#Experiment
+def Best_Fit_Clustering_3(T,c_omponent,p,alpha):
+    C = [[] for i in range(p)]
+    
+    # Create an empty queue for level order traversal 
+    queue = [] 
+
+    # Enqueue Root and initialize height
+    #Add first the children of the root into the queue 
+    queue.append(c_omponent) 
+    node = queue.pop(0) 
+    for vid in T.children(node):
+        queue.append(vid)
+
+    remain = 0
+    
+    weight = np.zeros(len(T))
+    #Compute the weights
+    for v in post_order(T,c_omponent):
+        weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
+    
+    c = int(len(T)/p)
+    def Best_Fit(remain,Q,last_cluster):
+        
+        sub = None
+        
+        if last_cluster:
+            sub = c_omponent
+        
+        else:
+            if len(queue) > 0:
+                while len(queue) > 0:
+                    node = queue.pop(0) 
+                    if weight[node] <= (1+alpha)*remain  and weight[node] > (1-alpha/2)*remain:
+                        sub = node 
+                        print("Found a good fit")
+                        break
+                    if weight[node] > (1+alpha)*remain:
+                        print("Filling the queue")
+                        for vid in T.children(node):
+                            queue.append(vid) 
+            else:
+                print("Entered else")
+                queue.append(c_omponent)
+                while len(queue) > 0:
+                    node = queue.pop(0)
+                    print("Node ",node,"with weight ",weight[node])
+                    if weight[node] <= (1+alpha)*remain  and weight[node] > (1-alpha/2)*remain:
+                        print("Found a good fit")
+                        sub = node 
+                        break
+                    if weight[node] > (1+alpha)*remain:
+                        print("Filling the queue")
+                        for vid in T.children(node):
+                            queue.append(vid) 
+                        
+        index = weight[sub]
+        for w in list(ancestors(T,sub)):
+                    weight[w] = weight[w] - index
+               
+        if sub != c_omponent:   
+            sub_tree_found = list(post_order(T,sub))
+            T.remove_tree(sub)
+        elif sub==c_omponent:
+            sub_tree_found = list(post_order2(T,c_omponent))#,pre_order_filter = lambda v: v not in color))        
+        return sub_tree_found
+        
+    remain = 0
+    last_cluster = False
+    for i in range(p):
+        print("Filling cluster ",i)
+        Qu = Priority_queue(weight)
+        
+        target = c
+        if i == p-1:
+            last_cluster = True
+            
+            
+        sub = Best_Fit(target,Qu,last_cluster)
+                
+        
+            
+        C[i] += sub
+            
+        #first_time = False
+    return C
+

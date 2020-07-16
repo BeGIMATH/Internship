@@ -9,23 +9,24 @@ import sys
 from oawidgets.mtg import *
 from oawidgets.plantgl import PlantGL
 from openalea.mtg.draw import *
-sys.path.insert(0, '/Task_2/Queue.py/')
+import sys
 
-from Queue import *
+sys.path.append("../../Task_2/src/")
 
+from algo import *
 
 from oawidgets.mtg import plot
 from oawidgets.plantgl import PlantGL
 
 
-#my_mtg = MTG()
-my_mtg = MTG('consolidated_mango3d.mtg')
+my_mtg = MTG()
+#my_mtg = MTG('consolidated_mango3d.mtg')
 
 dist = poisson(1., loc=1).rvs
 
 vid = my_mtg.add_component(my_mtg.root)
 
-#random_tree(my_mtg,vid,nb_children=dist,nb_vertices=999)
+random_tree(my_mtg,vid,nb_children=dist,nb_vertices=99)
 
 
 my_copy = my_mtg.copy()
@@ -38,7 +39,7 @@ t6 = timeit.default_timer()
 """
 p = 10
 t3 = timeit.default_timer()
-clusters_2 = SFC_BF_MTG(my_mtg,p,0.4)
+clusters_2 = Best_Fit_Clustering_2(my_mtg,vid,p,0.4)
 t4 = timeit.default_timer()
 
 #print("Time for clustering with the first algorithm based on paper",t2-t1)
