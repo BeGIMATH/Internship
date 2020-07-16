@@ -1,7 +1,6 @@
 from Queue import *
 
 def Best_Fit_Clustering_Paper(T,p,alpha):
-    
     C = [[] for i in range(p)]
     remain = 0
     weight = np.zeros(len(T))
@@ -10,7 +9,7 @@ def Best_Fit_Clustering_Paper(T,p,alpha):
         weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
     
     c = int(len(T)/p)
-    def BF(remain,first_time,Q,last_cluster):
+    def Best_Fit(remain,first_time,Q,last_cluster):
        
         sub = None
         index = 0
@@ -18,7 +17,7 @@ def Best_Fit_Clustering_Paper(T,p,alpha):
             sub = T.root
         
         elif first_time:
-            for v in post_order2(T,T.root):
+            for v in post_order(T,T.root):
                 if T.parent(v) != None:
                     if weight[v] <= remain and weight[T.parent(v)] > remain:
                         if Q[weight[v]] == None:
@@ -98,7 +97,7 @@ def Best_Fit_Clustering_Paper(T,p,alpha):
             if i == p-1:
                 last_cluster = True
             
-            sub = BF(remain,first_time,Qu,last_cluster)
+            sub = Best_Fit(remain,first_time,Qu,last_cluster)
             if sub == None:
                 break
             remain = remain - len(sub)
@@ -174,7 +173,7 @@ def Best_Fit_Clustering(T,c_omponent,p,alpha):
         
         
         if sub != c_omponent:  
-            sub_tree_found = list(pre_orderé(T,sub))
+            sub_tree_found = list(pre_order(T,sub))
             T.remove_tree(sub)
         elif sub==c_omponent:
             sub_tree_found = list(post_order(T,c_omponent))        
@@ -202,10 +201,6 @@ def Best_Fit_Clustering(T,c_omponent,p,alpha):
             
             first_time = False
     return C
-
-
-
-
 
 def First_Fit_Clustering(tree,c_omponent,p):
     vtx_id = c_omponent
@@ -289,13 +284,8 @@ def Best_Fit_Clustering_1(T,c_omponent,p,alpha):
 
         Best_Fit(target,Qu,last_cluster,i)
                 
-        
-            
-      
-    
-
 def Best_Fit_Clustering_MTG(T,p,alpha):
-    
+    cluster = T.property('cluster')
     C = [[] for i in range(p)]
     
     remain = 0
@@ -312,14 +302,14 @@ def Best_Fit_Clustering_MTG(T,p,alpha):
         
     c = int(len(T)/p)
     color = set()
-    def Best_Fit(remain,Q,last_cluster):
+    def Best_Fit(remain,Q,last_cluster,cluster_index):
         
         sub = None
         if last_cluster:
             sub = c_omponent
         
         else:
-            for vid in post_order(T,c_omponent,pre_order_filter = lambda v: v not in color):
+            for vid in post_order2(T,c_omponent,pre_order_filter = lambda v: v not in color):
                 if T.parent(vid) != None:
                     if weight[vid] <= (1+alpha)*remain  and weight[T.parent(vid)] > remain + alpha:
                         Q.append(vid)
@@ -333,11 +323,14 @@ def Best_Fit_Clustering_MTG(T,p,alpha):
                     weight[w] = weight[w] - index
         if sub != c_omponent:
             color.add(sub)   
-            sub_tree_found = list(post_order(T,sub,pre_order_filter = lamda v: v not in color))
-
-            T.remove_tree(sub)
+            sub_tree_found = list(post_order2(T,sub,pre_order_filter = lambda v: v not in color))
+            for v in sub_tree_found:
+                cluster[v] = cluster_index
+            #T.remove_tree(sub)
         elif sub==c_omponent:
             sub_tree_found = list(post_order2(T,c_omponent,pre_order_filter = lambda v: v not in color))        
+            for v in sub_tree_found:
+                cluster[v] = cluster_index
         return sub_tree_found
         
     remain = 0
@@ -347,24 +340,11 @@ def Best_Fit_Clustering_MTG(T,p,alpha):
         target = c
         if i == p-1:
             last_cluster = True
-        sub = Best_Fit(target,Qu,last_cluster)
+        sub = Best_Fit(target,Qu,last_cluster,i)
         C[i] += sub
     return C
 
-# Iterative Method to traverse the tree in level-order 
-def level_order(T,vtx_id): 
-    # Create an empty queue for level order traversal 
-    queue = [] 
-    # Enqueue Root and initialize height 
-    queue.append(vtx_id) 
-    while len(queue) > 0: 
-        node = queue.pop(0) 
-        for vid in T.children(node):
-            queue.append(vid)
-        yield node
-
-def Best_Fit_Clustering_2(T,c_omponent,p,alpha):
-    
+def Best_Fit_Clustering_2(T,c_omponent,p,alpha):    
     C = [[] for i in range(p)]
     
     remain = 0
@@ -396,12 +376,11 @@ def Best_Fit_Clustering_2(T,c_omponent,p,alpha):
                                
 
         if sub != c_omponent:
-            sub_tree_found = list(post_order2(T,sub,pre_order_filter = lambda v: v not in color))            
-            T.remove_tree(ub)
+            sub_tree_found = list(pre_order(T,sub))          
+            T.remove_tree(sub)
         elif sub==c_omponent:
-            sub_tree_found = list(post_order2(T,c_omponent,pre_order_filter = lambda v: v not in color)):        
+            sub_tree_found = list(post_order(T,c_omponent))     
         return sub_tree_found
-        
     remain = 0
     last_cluster = False
     for i in range(p):
@@ -413,9 +392,7 @@ def Best_Fit_Clustering_2(T,c_omponent,p,alpha):
             
             
         sub = Best_Fit(target,Qu,last_cluster,i)
-
         C[i] += sub   
-    
     return C
     
 
@@ -482,6 +459,8 @@ def Best_Fit_Clustering_MTG_1(T,p,alpha):
         C[i] += sub
     return C
 #Experiment
+
+
 def Best_Fit_Clustering_3(T,c_omponent,p,alpha):
     C = [[] for i in range(p)]
     
@@ -558,4 +537,5 @@ def Best_Fit_Clustering_3(T,c_omponent,p,alpha):
         sub = Best_Fit(target,Qu,last_cluster)
         C[i] += sub
     return C
+
 

@@ -56,9 +56,6 @@ for i in range(p):
 cluster = my_mtg.property('cluster')
 print("Clusters",cluster)
 groups = my_mtg.property('color')
-for i in range(p):
-    for j in [k for k,v in cluster.items() if v == i]:
-        groups[j] = i
-        #print("Node ",j,"belongs to cluster ",i)
-
+for j in [k for k,v in cluster.items() if v == 0]:
+    groups[j] = 0
 print(groups)
