@@ -1,20 +1,21 @@
+
+
 from openalea.mtg.draw import *
 from oawidgets.plantgl import PlantGL
 from oawidgets.mtg import *
-import timeit
-import os
-from scipy.stats import poisson, binom
-from openalea.mtg.traversal import *
-from openalea.mtg.io import *
-from openalea.mtg.algo import ancestors
-from openalea.mtg.mtg import *
+
 from oawidgets.mtg import plot
 
+from openalea.mtg.mtg import *
+from openalea.mtg.algo import ancestors
+from openalea.mtg.io import *
+from openalea.mtg.traversal import *
+from scipy.stats import poisson, binom
+import os
+import timeit
 import sys
-
 sys.path.append("../../Task_2/src/")
-from algo import *
-
+from algo_1 import *
 
 my_mtg = MTG()
 #my_mtg = MTG('consolidated_mango3d.mtg')
@@ -35,7 +36,7 @@ t6 = timeit.default_timer()
 """
 p = 10
 t3 = timeit.default_timer()
-Best_Fit_Clustering_1(my_mtg, vid, p, 0.4)
+clusters = Best_Fit_Clustering_1(my_mtg,vid, p, 0.4)
 t4 = timeit.default_timer()
 
 #print("Time for clustering with the first algorithm based on paper",t2-t1)
@@ -49,7 +50,8 @@ for i in range(p):
     print("Cluster",i,"with lenght",len(clusters_2[i]))
     print("with nodes ",clusters_2[i])
 """
+
 # plot_clusters(my_copy,cluster=clusters_2)
-cluster = my_mtg.property('cluster')
-print("Clusters", cluster)
-groups = my_mtg.property('color')
+
+tree = dependencies_evaluation(my_mtg)
+print("Maximal number of dependecies",tree)

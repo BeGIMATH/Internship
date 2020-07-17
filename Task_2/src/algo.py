@@ -59,13 +59,12 @@ def Best_Fit_Clustering_Paper(T,p,alpha):
                     sub = Q[i] 
                     Q[i] = None
                     break 
-
                 i = i - 1
             
             i = index
             if remain - index > 0:
                 while i > remain - index:
-                    for v in post_order2(T,Q[i],pre_order_filter = lambda v: v not in color):
+                    for v in post_order(T,Q[i]):
                         if T.parent(v) != None:
                             if weight[v] <= remain - index and weight[T.parent(v)] > remain - index:
                                 Q[weight[v]] = v
