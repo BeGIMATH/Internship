@@ -105,14 +105,21 @@ def balance_valuation(T, clusters):
 def number_of_dependencies(T):
     cluster = T.property('cluster')
     max_dependecy = 0
-    node_considering = None
+    previous_node = None
+    depth = 0
+    same_cluster = False
     for node in T.property('sub_tree'):
-        depth = 0
+        if previous_node is not None:
+            #Reset depth to zero
+            if cluster[previous_node] != cluster[node]:
+                depth = 0
+
         while T.parent(node) != None:
             if cluster[T.parent(node)] != cluster[node]:
                 depth += 1
+                print("Depth ",depth)
             node = T.parent(node)
-
+        previous_node = node
         max_dependecy = max(depth,max_dependecy)
         
     return max_dependecy
