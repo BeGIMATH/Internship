@@ -280,8 +280,8 @@ def First_Fit_Clustering(tree, c_omponent, p):
         else:
             counter += 1
             visited.add(vtx_id)
-            C[math.ceil(counter/c)-1].append(vtx_id)
-            cluster[vtx_id] = math.ceil(counter/c)-1
+            #C[math.ceil(counter/c)-1].append(vtx_id)
+            #cluster[vtx_id] = math.ceil(counter/c)-1
             queue.pop()
     return C
 
