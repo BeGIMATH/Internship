@@ -36,7 +36,7 @@ t6 = timeit.default_timer()
 """
 p = 10
 t3 = timeit.default_timer()
-clusters = Best_Fit_Clustering_1(my_mtg,vid, p, 0.4)
+Best_Fit_Clustering_1(my_mtg,vid, p, 0.4)
 t4 = timeit.default_timer()
 
 #print("Time for clustering with the first algorithm based on paper",t2-t1)
@@ -54,4 +54,5 @@ for i in range(p):
 # plot_clusters(my_copy,cluster=clusters_2)
 
 tree = dependencies_evaluation(my_mtg)
+print("Clusters ",my_mtg.property('cluster'))
 print("Maximal number of dependecies",tree)

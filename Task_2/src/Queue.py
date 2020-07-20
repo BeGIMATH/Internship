@@ -92,20 +92,16 @@ def balance_valuation(T, clusters):
     return max - optimal_size
 
 # Compute the number of dependecies
-
-
 def dependencies_evaluation(T):
 
     max_dependecy = 0
     cluster = T.property('cluster')
-    print(T.property('color'))
-    for node in T.property('color'):
+    
+    for Node in T.property('color'):
         depth = 0
-        while T.parent(node) != None:
-            if cluster[T.parent(node)] != cluster[node]:
+        for node in T.Ancestors(Node):
+            if cluster[node] != cluster[Node]:
                 depth += 1
-            node = T.parent(node)
-        
         max_dependecy = max(depth,max_dependecy)
         
     return max_dependecy

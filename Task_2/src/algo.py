@@ -81,7 +81,7 @@ def Best_Fit_Clustering_Paper(T,p,alpha):
             sub_tree_found = list(pre_order(T,sub))
             T.remove_tree(sub)
         elif sub == T.root:
-            sub_tree_found = list(post_order(T,sub))
+            sub_tree_found = list(pre_order(T,sub))
         return sub_tree_found
         
     remain = 0
