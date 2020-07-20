@@ -21,9 +21,9 @@ my_mtg = MTG()
 
 dist = poisson(1., loc=1).rvs
 
-vid = my_mtg.add_component(my_mtg.root)
+#vid = my_mtg.add_component(my_mtg.root)
 
-random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99)
+random_tree(my_mtg, my_mtg.root, nb_children=dist, nb_vertices=99)
 
 
 #random_tree(my_mtg,vid, nb_children=dist,nb_vertices=99)
@@ -35,7 +35,7 @@ t6 = timeit.default_timer()
 """
 p = 10
 t3 = timeit.default_timer()
-Best_Fit_Clustering_1(my_mtg, vid, p, 0.4)
+clusters = Best_Fit_Clustering_Paper(my_mtg, p, 0.4)
 t4 = timeit.default_timer()
 
 #print("Time for clustering with the first algorithm based on paper",t2-t1)
@@ -51,5 +51,5 @@ for i in range(p):
 """
 # plot_clusters(my_copy,cluster=clusters_2)
 cluster = my_mtg.property('cluster')
-print("Clusters", cluster)
+print("Clusters", clusters)
 groups = my_mtg.property('color')

@@ -63,19 +63,29 @@ class Priority_queue:
         return self.heapList[1]
 
 # Iterative Method to traverse the tree in level-order
-
-
-def level_order(T, vtx_id, visitor_filter=None):
+def level_order(T, vtx_id):
     # Create an empty queue for level order traversal
     queue = []
-    if visitor_filter is None:
-        def visitor_filter(v): return True
     # Enqueue Root and initialize height
     queue.append(vtx_id)
     while len(queue) > 0:
         node = queue.pop(0)
         for vid in T.children(node):
-            if not visitor_filter(vid):
+            queue.append(vid)
+        yield node
+
+# Iterative Method to traverse the tree in level-order
+def level_order2(T, vtx_id, visitor_filter=None):
+    # Create an empty queue for level order traversal
+    queue = []
+    if visitor_filter is None:
+        visitor_filter = lambda x: True
+    # Enqueue Root and initialize height
+    queue.append(vtx_id)
+    while len(queue) > 0:
+        node = queue.pop(0)
+        for vid in T.children(node):
+            if visitor_filter(vid):
                 queue.append(vid)
         yield node
 # Check how well the clusters are balanced
@@ -92,16 +102,17 @@ def balance_valuation(T, clusters):
     return max - optimal_size
 
 # Compute the number of dependecies
-def dependencies_evaluation(T):
-
-    max_dependecy = 0
+def number_of_dependencies(T):
     cluster = T.property('cluster')
-    
-    for Node in T.property('color'):
+    max_dependecy = 0
+    node_considering = None
+    for node in T.property('sub_tree'):
         depth = 0
-        for node in T.Ancestors(Node):
-            if cluster[node] != cluster[Node]:
+        while T.parent(node) != None:
+            if cluster[T.parent(node)] != cluster[node]:
                 depth += 1
+            node = T.parent(node)
+
         max_dependecy = max(depth,max_dependecy)
         
     return max_dependecy

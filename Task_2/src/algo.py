@@ -9,6 +9,7 @@ def Best_Fit_Clustering_Paper(T,p,alpha):
         weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
     
     c = int(len(T)/p)
+    color = T.property('color')
     def Best_Fit(remain,first_time,Q,last_cluster):
        
         sub = None
@@ -17,7 +18,7 @@ def Best_Fit_Clustering_Paper(T,p,alpha):
             sub = T.root
         
         elif first_time:
-            for v in post_order(T,T.root):
+            for v in post_order2(T,T.root,pre_order_filter = lambda v: v not in color):
                 if T.parent(v) != None:
                     if weight[v] <= remain and weight[T.parent(v)] > remain:
                         if Q[weight[v]] == None:
@@ -64,7 +65,7 @@ def Best_Fit_Clustering_Paper(T,p,alpha):
             i = index
             if remain - index > 0:
                 while i > remain - index:
-                    for v in post_order(T,Q[i]):
+                    for v in post_order2(T,Q[i],pre_order_filter = lambda v: v not in color):
                         if T.parent(v) != None:
                             if weight[v] <= remain - index and weight[T.parent(v)] > remain - index:
                                 Q[weight[v]] = v
@@ -78,10 +79,11 @@ def Best_Fit_Clustering_Paper(T,p,alpha):
        
 
         if sub != T.root:
-            sub_tree_found = list(pre_order(T,sub))
-            T.remove_tree(sub)
+            color[sub] = sub
+            sub_tree_found = list(post_order2(T,sub,pre_order_filter = lambda v: v not in color))
+            #T.remove_tree(sub)
         elif sub == T.root:
-            sub_tree_found = list(pre_order(T,sub))
+            sub_tree_found = list(post_order2(T,sub,pre_order_filter = lambda v: v not in color))
         return sub_tree_found
         
     remain = 0
