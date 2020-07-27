@@ -43,5 +43,9 @@ TARGET_LINK_LIBRARIES(bench_multi_opt  benchmark)
 ADD_EXECUTABLE(bench_MPI_opt bench_MPI_opt.cpp)
 TARGET_LINK_LIBRARIES(bench_MPI_opt benchmark)
 
+ADD_EXECUTABLE(pickle_test pickle_test.cpp)
+TARGET_LINK_LIBRARIES(pickle_test  Boost::python  Python3::Python Boost::system benchmark)
+
+
 
 FILE(COPY execute.sh DESTINATION ${CMAKE_BINARY_DIR}/../run)

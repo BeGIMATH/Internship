@@ -2,6 +2,12 @@
 #include "pyth_object.h"
 #include "pyconfig.h"
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <cassert>
+#include <cstring>
 boost::mutex mutex;
 
 void seq_function(int list_length)
@@ -781,4 +787,58 @@ void pure_mpi_function_opt(int list_length)
     {
         std::cout << "List length " << list_length << " nr of processes " << size << " time " << end - start << " seconds" << std::endl;
     }
+}
+
+void pickle_dump_function(int list_length)
+{
+
+    Py_Initialize();
+
+    object main_module = import("__main__");
+    object main_namespace = main_module.attr("__dict__");
+    object my_pickle = import("pickle");
+    PyObject *m_dumps = object(my_pickle.attr("dumps")).ptr();
+    PyObject *m_loads = object(my_pickle.attr("loads")).ptr();
+
+    list mlist;
+    for (int i = 0; i < list_length; ++i)
+    {
+        mlist.append(i);
+    }
+    boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
+
+    //boost::python::str s_mlist = extract<str>(m_dumps(mlist));
+    std::string s_mlist = call<std::string>(m_dumps, mlist);
+
+    std::ofstream os("/home/begatim/Desktop/Thesis_Project/Internship/Task_1/data/data.txt");
+    if (!os)
+    {
+        std::cerr << "Error writing to ..." << std::endl;
+    }
+    else
+    {
+        os << s_mlist;
+    }
+    os.close();
+
+    std::ifstream inFile("/home/begatim/Desktop/Thesis_Project/Internship/Task_1/data/data.txt");
+    std::string result;
+
+    if (inFile)
+    {
+        std::ostringstream ss;
+        ss << inFile.rdbuf(); // reading data
+        result = ss.str();
+    }
+
+    //std::cout << result << std::endl;
+    char cstr[result.size() + 1];
+    s_mlist.copy(cstr, result.size() + 1);
+    cstr[result.size()] = '\0';
+
+    PyObject *ps_Local_l = PyBytes_FromStringAndSize(cstr, result.size() + 1);
+    auto retval = boost::python::object(boost::python::handle<>(ps_Local_l));
+    boost::python::list final_list = call<list>(m_loads, retval);
+    boost::chrono::high_resolution_clock::time_point end = boost::chrono::high_resolution_clock::now();
+    std::cout << "List length " << list_length << " time to serialize and save to a file " << (end - start).count() * ((double)boost::chrono::high_resolution_clock::period::num / boost::chrono::high_resolution_clock::period::den) << std::endl;
 }

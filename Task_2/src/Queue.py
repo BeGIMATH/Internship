@@ -117,9 +117,39 @@ def number_of_dependencies(T):
         while T.parent(node) != None:
             if cluster[T.parent(node)] != cluster[node]:
                 depth += 1
-                print("Depth ",depth)
             node = T.parent(node)
         previous_node = node
         max_dependecy = max(depth,max_dependecy)
         
     return max_dependecy
+
+def Max_depth(node):
+    childs = my_mtg.children(node)
+    nodes = []
+    leafs = []
+    #Classify nodes either as leafs or as nodes
+    for i in childs:
+        if my_mtg.children(i) == None:
+            leafs.append(i)
+        else:
+            nodes.append(i)
+    #If the all
+    if len(nodes) == 0:
+        return 1
+    if len(nodes) == 1:
+        return Max_depth(nodes[0]) + 1
+    else:
+         return max(map(Max_depth,[nodes[i] for i in range(len(nodes))] )) + 1
+
+
+def max_nb_dependecies(T):
+    cluster = T.property('cluster')
+    sub_tree = T.property('sub_tree')
+    g.insert_scale(my_mtg.max_scale(), lambda vid: my_mtg.property('sub_tree').get(vid,None) != None)
+    
+    root = my_mtg.component_roots_at_scale_iter(my_mtg.root,scale=my_mtg.max_scale()-1)
+    
+    a = list(root)
+    result = Max_depth(a[0])
+    my_mtg.remove_scale(my_mtg.max_scale()-1)
+    return result

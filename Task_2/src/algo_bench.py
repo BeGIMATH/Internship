@@ -109,14 +109,14 @@ def Best_Fit_Clustering_Paper(T, p, alpha):
         
     remain = 0
     
-    for i in range(p):
+    for i in reversed(range(p)):
         target = c
         remain = target
         first_time = True
         last_cluster = False
         Qu = [None for i in range(remain+1)]
         while remain > 1:
-            if i == p-1:
+            if i == 0:
                 last_cluster = True
             
             sub = Best_Fit(remain,first_time,Qu,last_cluster,i)
@@ -210,7 +210,7 @@ def Best_Fit_Clustering_Queue(T,p,alpha):
                 cluster[v] = cluster_index
         return sub_tree_found
 
-    for i in range(p):
+    for i in reversed(range(p)):
         Qu = Priority_queue(weight)
 
         target = c
@@ -219,7 +219,7 @@ def Best_Fit_Clustering_Queue(T,p,alpha):
         last_cluster = False
         while remain > 1:
 
-            if i == p-1:
+            if i == 0:
                 last_cluster = True
             if remain < 1:
                 break
@@ -276,9 +276,12 @@ def First_Fit_Clustering_Paper(T,p):
         else:
             counter += 1
             visited.add(vtx_id)
-            if T.parent(vtx_id):
+            if vtx_id != c_omponent:
                 if (weights[T.parent(vtx_id)] > c) or  (math.ceil((counter+1)/c) != math.ceil(counter/c)):
                     sub_tree[vtx_id] = math.ceil(counter/c)-1
+                    remove_weight = weights[vtx_id]
+                    for w in list(ancestors(T, vtx_id)):
+                        weights[w] = weights[w] - remove_weight
             elif vtx_id == c_omponent:
                 sub_tree[vtx_id] = math.ceil(counter/c)-1
             cluster[vtx_id] = math.ceil(counter/c)-1
@@ -329,10 +332,10 @@ def Best_Fit_Clustering_Queue_1(T,p, alpha):
             cluster[v] = cluster_index
         
     last_cluster = False
-    for i in range(p):
+    for i in reversed(range(p)):
         Qu = Priority_queue(weight)
         target = c
-        if i == p-1:
+        if i == 0:
             last_cluster = True
 
         Best_Fit(target, Qu, last_cluster, i)
@@ -388,10 +391,10 @@ def Best_Fit_Clustering_No_Queue(T,p, alpha):
         
     
     last_cluster = False
-    for i in range(p):
+    for i in reversed(range(p)):
         Qu = Priority_queue(weight)
         target = c
-        if i == p-1:
+        if i == 0:
             last_cluster = True
 
         Best_Fit(target, Qu, last_cluster, i)
@@ -470,7 +473,7 @@ def Best_Fit_Clustering_No_Queue_1(T,p, alpha):
  
     remain = 0
     last_cluster = False
-    for i in range(p):
+    for i in reversed(range(p)):
         Qu = Priority_queue(weight)
 
         target = c
