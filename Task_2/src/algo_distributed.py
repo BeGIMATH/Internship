@@ -27,10 +27,12 @@ def distributed_traversal(g,algo,direction,alpha=0.4):
         :Returns:
             Nothing
     '''
+
     if rank == 0:
         nb_cpus = psutil.cpu_count(logical=False)
-        
-        algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_No_Queue,Best_Fit_Clustering_No_Queue_1]
+        if g.property('sub_tree') != None:
+            g.remove_property('sub_tree')
+        algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
         if algo in algos:
             if algo != First_Fit_Clustering_Paper:
                 algo(g,nb_cpus,alpha)
@@ -38,6 +40,8 @@ def distributed_traversal(g,algo,direction,alpha=0.4):
                 algo(g,nb_cpus)
 
             g.insert_scale(g.max_scale(), lambda vid: g.property('sub_tree').get(vid,None) != None)
+            
+            
             connection_nodes = g.property('connection_nodes')
             for node in g.property('sub_tree'):
                 if g.parent(node) != None:

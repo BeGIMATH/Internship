@@ -249,7 +249,7 @@ def First_Fit_Clustering_Paper(T,p):
     weights = np.zeros(len(T))
     for v in post_order(T, c_omponent):
         weights[v] = 1 + sum([weights[vid] for vid in T.children(v)])
-
+    weights_copy = weights
     visited = set([])
 
     def order_children(vid):
@@ -265,7 +265,7 @@ def First_Fit_Clustering_Paper(T,p):
     c = int(len(T)/p)
 
     queue = [vtx_id]
-
+    local_weight = c
     counter = 0
     while queue:
         vtx_id = queue[-1]
@@ -274,17 +274,27 @@ def First_Fit_Clustering_Paper(T,p):
                 queue.append(vid)
                 break
         else:
+            
             counter += 1
             visited.add(vtx_id)
+            if math.ceil(counter/c) - 1 >= p:
+                cluster[vtx_id] = 0
+            else:
+                cluster[vtx_id] = p - 1 - (math.ceil(counter/c) - 1)
             if vtx_id != c_omponent:
-                if (weights[T.parent(vtx_id)] > c) or  (math.ceil((counter+1)/c) != math.ceil(counter/c)):
-                    sub_tree[vtx_id] = p - 1 - (math.ceil(counter/c)-1)
-                    remove_weight = weights[vtx_id]
-                    for w in list(ancestors(T, vtx_id)):
-                        weights[w] = weights[w] - remove_weight
+                #Check if it is a sub_tree root
+                if weights_copy[T.parent(vtx_id)] > local_weight or (math.ceil((counter+1)/c) != math.ceil(counter/c)):
+                    if p - 1 - (math.ceil(counter/c) - 1) > 0:
+                        sub_tree[vtx_id] = p - 1 - (math.ceil(counter/c) - 1)
+                        remove_weight = weights_copy[vtx_id]
+                        local_weight -= weights_copy[vtx_id]
+                        if (math.ceil((counter+1)/c) != math.ceil(counter/c)):
+                            local_weight = c
+                        for w in list(ancestors(T, vtx_id)):
+                            weights_copy[w] = weights_copy[w] - remove_weight
             elif vtx_id == c_omponent:
-                sub_tree[vtx_id] = p - 1 -(math.ceil(counter/c)-1)
-            cluster[vtx_id] = p - 1 - (math.ceil(counter/c)-1)
+                sub_tree[vtx_id] = 0
+               
             queue.pop()
     
 def Best_Fit_Clustering_Queue_1(T,p, alpha):
@@ -344,7 +354,7 @@ def Best_Fit_Clustering_Queue_1(T,p, alpha):
 
 
 
-def Best_Fit_Clustering_No_Queue(T,p, alpha):
+def Best_Fit_Clustering_level_order(T,p, alpha):
     ''' Clustering Trees based on the paper of Hambrusch and Liu but modified for better performance
     Now, it uses level-order traversal instead of post-order to find the trees
 

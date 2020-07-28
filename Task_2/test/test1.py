@@ -36,7 +36,7 @@ t6 = timeit.default_timer()
 """
 p = 10
 t3 = timeit.default_timer()
-First_Fit_Clustering_Paper(my_mtg,p)
+Best_Fit_Clustering_No_Queue_1(my_mtg,p,0.4)
 t4 = timeit.default_timer()
 
 print("Time for clustering with the first algorithm using the queue", t4-t3)
@@ -48,6 +48,6 @@ for i in range(p):
     print("with nodes ",clusters_2[i])
 """
 
-print("Clusters ",my_mtg.property('cluster'))
 print("Sub_tree roots ",my_mtg.property('sub_tree'))
 
+plot_clusters_dict(my_mtg,nb_clusters=p)
