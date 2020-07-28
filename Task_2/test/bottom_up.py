@@ -23,6 +23,8 @@ def dummy_function(x):
     return x
 
 
+
+
 if rank == 0:
     my_mtg = MTG()
 
@@ -38,7 +40,7 @@ if rank == 0:
     for node in my_mtg.property('sub_tree'):
         if my_mtg.parent(node) != None:
             connection_nodes[node] = True
-
+    
 
 else:
     my_mtg = None

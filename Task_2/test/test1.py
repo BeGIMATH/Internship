@@ -36,14 +36,11 @@ t6 = timeit.default_timer()
 """
 p = 10
 t3 = timeit.default_timer()
-Best_Fit_Clustering_Queue(my_mtg,p,0.4)
+First_Fit_Clustering_Paper(my_mtg,p)
 t4 = timeit.default_timer()
 
-#print("Time for clustering with the first algorithm based on paper",t2-t1)
 print("Time for clustering with the first algorithm using the queue", t4-t3)
-#print("Time for clustering with the second algorithm using queue removing the subtree",t6-t5)
-#color = my_mtg.property('cluster')
-# print(color)
+
 """
 for i in range(p):
     print("------------------------")
@@ -51,9 +48,6 @@ for i in range(p):
     print("with nodes ",clusters_2[i])
 """
 
-# plot_clusters(my_copy,cluster=clusters_2)
-
-#tree = dependencies_evaluation(my_mtg)
 print("Clusters ",my_mtg.property('cluster'))
+print("Sub_tree roots ",my_mtg.property('sub_tree'))
 
-#print("Maximal number of dependecies",tree)

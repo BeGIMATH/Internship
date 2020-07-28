@@ -15,28 +15,32 @@ recv_results = {}
 import psutil
 
 
-def bottom_up():
-    pass
-
-def top_down():
-    pass
-
+def dummy_function(x):
+    return x
 
 def distributed_traversal(g,algo,direction,alpha=0.4):
+    ''' Traversing the tree in a distributed way, were the work is distributed based on the clustering algorithm used
+        :Parameterers:
+        -   'g' The tree we want to traverse
+        -   'algo' The algorithm used to cluster the nodes of the tree
+        -   'alpha' Parameter to control the difference between cluster sizes, default value 0.4
+        :Returns:
+            Nothing
+    '''
     if rank == 0:
         nb_cpus = psutil.cpu_count(logical=False)
         
-        algos = ["Best_Fit_Clustering_Paper","Best_Fit_Clustering_Queue","First_Fit_Clustering_Paper","Best_Fit_Clustering_Queue_1","Best_Fit_Clustering_No_Queue","Best_Fit_Clustering_No_Queue_1"]
+        algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_No_Queue,Best_Fit_Clustering_No_Queue_1]
         if algo in algos:
-            if algo != "First_Fit_Clustering_Paper":
+            if algo != First_Fit_Clustering_Paper:
                 algo(g,nb_cpus,alpha)
             else:
                 algo(g,nb_cpus)
 
             g.insert_scale(g.max_scale(), lambda vid: g.property('sub_tree').get(vid,None) != None)
-            connection_nodes = my_mtg.property('connection_nodes')
-            for node in my_mtg.property('sub_tree'):
-                if my_mtg.parent(node) != None:
+            connection_nodes = g.property('connection_nodes')
+            for node in g.property('sub_tree'):
+                if g.parent(node) != None:
                     connection_nodes[node] = True
             
             my_mtg = g
@@ -61,7 +65,7 @@ def distributed_traversal(g,algo,direction,alpha=0.4):
                         for vid in post_order2_with_filter(my_mtg.component_roots(node)[0],pre_order_filter = lambda v: v not in sub_tree):
                             if vid == my_mtg.component_roots(node)[0]:
                                 msg = 'start'
-                                req = comm.isend(msg,dest = cluster[my_mtg.parent(vid)],my_mtg.parent(vid))
+                                req = comm.isend(msg,dest = cluster[my_mtg.parent(vid)],tag = my_mtg.parent(vid))
                             dict_result[vid] = dummy_function(vid)
                     
                     else:
@@ -97,18 +101,17 @@ def distributed_traversal(g,algo,direction,alpha=0.4):
             for i in range(1,size):
                 dict_result = comm.recv(source = i,tag=1)
                 recv_results.update(dict_result)
-    elif:
-        direction == "top_down":
+    elif direction == "top_down":
         if rank == 0:
             for node in sub_tree:
                 if cluster[node] == rank:
-                for vid in pre_order2_with_filter(my_mtg,node,pre_order_filter = lambda v: v not in sub_tree):
-                    if vid in connection_nodes:
-                        for child in my_mtg.children(vid):
-                            if cluster[child] != rank:
-                                msg = 'start'
-                                req = comm.isend(msg,dest = cluster[child], tag = child)
-                    dict_result[vid] = dummy_function(vid)                       
+                    for vid in pre_order2_with_filter(my_mtg,node,pre_order_filter = lambda v: v not in sub_tree):
+                        if vid in connection_nodes:
+                            for child in my_mtg.children(vid):
+                                if cluster[child] != rank:
+                                    msg = 'start'
+                                    req = comm.isend(msg,dest = cluster[child], tag = child)
+                        dict_result[vid] = dummy_function(my_mtg.parent(vid))                       
         else:
             for node in sub_tree:
                 if cluster[node] == rank:
@@ -129,6 +132,7 @@ def distributed_traversal(g,algo,direction,alpha=0.4):
             for i in range(1,size):
                 dict_result = comm.recv(source = i,tag=1)
                 recv_results.update(dict_result)
+            g.remove_scale(g.max_scale()-1)
 
 
 

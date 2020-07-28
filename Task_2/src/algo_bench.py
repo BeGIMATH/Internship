@@ -278,13 +278,13 @@ def First_Fit_Clustering_Paper(T,p):
             visited.add(vtx_id)
             if vtx_id != c_omponent:
                 if (weights[T.parent(vtx_id)] > c) or  (math.ceil((counter+1)/c) != math.ceil(counter/c)):
-                    sub_tree[vtx_id] = math.ceil(counter/c)-1
+                    sub_tree[vtx_id] = p - 1 - (math.ceil(counter/c)-1)
                     remove_weight = weights[vtx_id]
                     for w in list(ancestors(T, vtx_id)):
                         weights[w] = weights[w] - remove_weight
             elif vtx_id == c_omponent:
-                sub_tree[vtx_id] = math.ceil(counter/c)-1
-            cluster[vtx_id] = math.ceil(counter/c)-1
+                sub_tree[vtx_id] = p - 1 -(math.ceil(counter/c)-1)
+            cluster[vtx_id] = p - 1 - (math.ceil(counter/c)-1)
             queue.pop()
     
 def Best_Fit_Clustering_Queue_1(T,p, alpha):
