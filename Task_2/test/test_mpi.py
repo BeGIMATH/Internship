@@ -31,4 +31,4 @@ random_tree(test_mtg,vid,nb_children=dist,nb_vertices=99)
 
 distributed_tree_traversal(test_mtg,Best_Fit_Clustering_Queue,"bottom_up")
 
-#distributed_tree_traversal(test_mtg,Best_Fit_Clustering_Paper,"top_down")
+distributed_tree_traversal(test_mtg,Best_Fit_Clustering_Paper,"top_down")
