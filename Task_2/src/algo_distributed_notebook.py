@@ -71,6 +71,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
     if direction == "bottom_up":
         if rank != 0:
             for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
+                print("Node in new scale ",node)
                 max_scale_id = my_mtg.component_roots(node)[0]
                 if cluster[max_scale_id] == rank:
                     if my_mtg.is_leaf(node):
@@ -101,19 +102,22 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                                     req = comm.isend(msg,dest = cluster[my_mtg.parent(vid)],tag = vid)
 
         else:
-                max_scale_id = my_mtg.component_roots(my_mtg.root)[0]
-                for vid in post_order2(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
-                    if vid in connection_nodes:
-                        dict_result[vid] = 1
-                        for child in my_mtg.children(vid):
-                            if cluster[child] != rank:
-                                req = comm.irecv(source = cluster[child],tag = child)
-                                msg = req.wait()
-                                dict_result[vid] += msg
-                            else:
-                                dict_result[vid] += dict_result[child]
-                    else:
-                        dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
+            for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
+                max_scale_id = my_mtg.component_roots(node)[0]
+                if cluster[max_scale_id] == rank:
+                    print("From root process ",max_scale_id)
+                    for vid in post_order2(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
+                        if vid in connection_nodes:
+                            dict_result[vid] = 1
+                            for child in my_mtg.children(vid):
+                                if cluster[child] != rank:
+                                    req = comm.irecv(source = cluster[child],tag = child)
+                                    msg = req.wait()
+                                    dict_result[vid] += msg
+                                else:
+                                    dict_result[vid] += dict_result[child]
+                        else:
+                            dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
 
     elif direction == "top_down":
         if rank == 0:
@@ -142,22 +146,17 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                                     msg = dict_result[vid]
                                     req = comm.isend(msg,dest = cluster[child],tag = child)
                         
-
-    if rank!= 0:
-        comm.send(dict_result,dest=0,tag=1)
-    else:
-        for i in range(1,size):
-            dict_result = comm.recv(source = i,tag=1)
-            recv_results.update(dict_result)
+ 
+    data = comm.gather(dict_result,root=0)
            
-            
-    
     end = MPI.Wtime()
-    #comm.Barrier()
+    comm.Barrier()
     if rank == 0:
         print("Time it take for MPI ",end - start)
-        
-        
+        for element in data:
+            recv_results.update(element)
+        print("Results ",recv_results)
+              
 
         
     
