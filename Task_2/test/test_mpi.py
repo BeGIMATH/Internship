@@ -27,18 +27,27 @@ dist = poisson(1., loc=1).rvs
 
 vid = test_mtg.add_component(test_mtg.root)
 
-random_tree(test_mtg,vid,nb_children=dist,nb_vertices=99)
+random_tree(test_mtg,vid,nb_children=dist,nb_vertices=999)
 algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
 for algo in algos:
     distributed_tree_traversal(test_mtg,algo,"bottom_up")
     distributed_tree_traversal(test_mtg,algo,"top_down")
-    
-"""
-for algo in algos:
-    results = distributed_tree_traversal(test_mtg,algo,"bottom_up")
-    if results != None:
-        print("Results ",results)
-    results_1 = distributed_tree_traversal(test_mtg,algo,"top_down")
-    if results_1 != None:
-        print("Results ",results_1)
-"""
+
+
+def f():
+    for x in range(2500):
+        x+=1
+comm = MPI.COMM_WORLD  
+rank = comm.Get_rank()
+if rank == 0:
+    start = MPI.Wtime()
+    dict_result = {}
+    for vid in post_order2(test_mtg,vid):
+        dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in test_mtg.children(vid)])
+        f()
+    end = MPI.Wtime()
+
+    print("Time for the sequentail program ",end - start)
+                        
+
+
