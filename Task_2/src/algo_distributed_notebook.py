@@ -32,7 +32,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
 
     if rank == 0:
         my_mtg = g.copy()
-        nb_cpus = psutil.cpu_count(logical=False)
+        nb_cpus = size#psutil.cpu_count(logical=False)
         
         algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
         if algo in algos:
@@ -46,16 +46,10 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
             
             my_mtg.insert_scale(my_mtg.max_scale(), lambda vid: vid in sub_tree)
             
-            
-            
-            
-            
-        
         else:
             #Implement a raise error
             print("Wrong algorithm try one of them ",algos)
             
-    
     else:
         my_mtg = None
 
@@ -67,11 +61,12 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
     connection_nodes = my_mtg.property('connection_nodes')
     for node in sub_tree:
         if my_mtg.parent(node) != None:
-            connection_nodes[node] = True
+            connection_nodes[my_mtg.parent(node)] = True
+   
+    
     if direction == "bottom_up":
         if rank != 0:
             for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
-                print("Node in new scale ",node)
                 max_scale_id = my_mtg.component_roots(node)[0]
                 if cluster[max_scale_id] == rank:
                     if my_mtg.is_leaf(node):
@@ -105,7 +100,6 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
             for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
                 max_scale_id = my_mtg.component_roots(node)[0]
                 if cluster[max_scale_id] == rank:
-                    print("From root process ",max_scale_id)
                     for vid in post_order2(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
                         if vid in connection_nodes:
                             dict_result[vid] = 1
@@ -118,20 +112,20 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                                     dict_result[vid] += dict_result[child]
                         else:
                             dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
-
     elif direction == "top_down":
         if rank == 0:
-            root = my_mtg.component_roots(my_mtg.root)[0]
-            for vid in pre_order2_with_filter(my_mtg,root,pre_order_filter = lambda v: v not in sub_tree):
-                if my_mtg.parent(vid) == None:
-                    dict_result[vid] = 1
-                else:
-                    dict_result[vid] = 1 + dict_result[my_mtg.parent(vid)]
-                if vid in connection_nodes:
-                    for child in my_mtg.children(vid):
-                        if cluster[child] != rank:
-                            msg = dict_result[vid]
-                            req = comm.isend(msg,dest = cluster[child], tag = child)
+            for node in sub_tree:
+                if cluster[node] == rank:
+                    for vid in pre_order2_with_filter(my_mtg,node,pre_order_filter = lambda v: v not in sub_tree):
+                        if my_mtg.parent(vid) == None:
+                            dict_result[vid] = 1
+                        else:
+                            dict_result[vid] = 1 + dict_result[my_mtg.parent(vid)]
+                        if vid in connection_nodes:
+                            for child in my_mtg.children(vid):
+                                if cluster[child] != rank:
+                                    msg = dict_result[vid]
+                                    req = comm.isend(msg,dest = cluster[child], tag = child)
         else:
             for node in sub_tree:
                 if cluster[node] == rank:
@@ -146,17 +140,19 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                                     msg = dict_result[vid]
                                     req = comm.isend(msg,dest = cluster[child],tag = child)
                         
- 
+
     data = comm.gather(dict_result,root=0)
            
     end = MPI.Wtime()
     comm.Barrier()
     if rank == 0:
-        print("Time it take for MPI ",end - start)
+        print("Time it take for MPI ",end - start," using algorithm ",algo.__name__,"direction ",direction)
         for element in data:
             recv_results.update(element)
-        print("Results ",recv_results)
-              
+
+       
+        
+        
 
         
     
