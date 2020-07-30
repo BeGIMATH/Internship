@@ -117,28 +117,31 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
 
     elif direction == "top_down":
         if rank == 0:
-            for node in sub_tree:
-                if cluster[node] == rank:
-                    for vid in pre_order2_with_filter(my_mtg,node,pre_order_filter = lambda v: v not in sub_tree):
-                        if vid in connection_nodes:
-                            for child in my_mtg.children(vid):
-                                if cluster[child] != rank:
-                                    msg = 'start'
-                                    req = comm.isend(msg,dest = cluster[child], tag = child)
-                        dict_result[vid] = dummy_function(my_mtg.parent(vid))                       
+            root = my_mtg.component_roots(my_mtg.root)[0]
+            for vid in pre_order2_with_filter(my_mtg,root,pre_order_filter = lambda v: v not in sub_tree):
+                if my_mtg.parent(vid) == None:
+                    dict_result[vid] = 1
+                else:
+                    dict_result[vid] = 1 + dict_result[my_mtg.parent(vid)]
+                if vid in connection_nodes:
+                    for child in my_mtg.children(vid):
+                        if cluster[child] != rank:
+                            msg = dict_result[vid]
+                            req = comm.isend(msg,dest = cluster[child], tag = child)
         else:
             for node in sub_tree:
                 if cluster[node] == rank:
                     req = comm.irecv(source = cluster[my_mtg.parent(node)],tag = node)
                     msg = req.wait()
-                    if msg == 'start':
-                        for vid in pre_order2_with_filter(my_mtg,node,pre_order_filter = lambda v: v not in sub_tree):
-                            if vid in connection_nodes:
-                                for child in my_mtg.children(vid):
-                                    if cluster[child] != rank:
-                                        msg = 'start'
-                                        req = comm.isend(msg,dest = cluster[child],tag = child)
-                            dict_result[vid] = dummy_function(vid)
+                    dict_result[my_mtg.parent(node)] = msg
+                    for vid in pre_order2_with_filter(my_mtg,node,pre_order_filter = lambda v: v not in sub_tree):
+                        dict_result[vid] = 1 + dict_result[my_mtg.parent(vid)]
+                        if vid in connection_nodes:
+                            for child in my_mtg.children(vid):
+                                if cluster[child] != rank:
+                                    msg = dict_result[vid]
+                                    req = comm.isend(msg,dest = cluster[child],tag = child)
+                        
 
     if rank!= 0:
         comm.send(dict_result,dest=0,tag=1)
