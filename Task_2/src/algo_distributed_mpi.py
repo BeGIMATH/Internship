@@ -33,7 +33,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
     start = MPI.Wtime()
     if rank == 0:
         my_mtg = g.copy()
-        nb_cpus = size#psutil.cpu_count(logical=False)
+        nb_cpus = size
         
         algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
         if algo in algos:
@@ -120,9 +120,10 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                             dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
     elif direction == "top_down":
         if rank == 0:
-            for node in sub_tree:
-                if cluster[node] == rank:
-                    for vid in pre_order2_with_filter(my_mtg,node,pre_order_filter = lambda v: v not in sub_tree):
+            for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
+                max_scale_id = my_mtg.component_roots(node)[0]
+                if cluster[max_scale_id] == rank:
+                    for vid in pre_order2_with_filter(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
                         if my_mtg.parent(vid) == None:
                             f()
                             dict_result[vid] = 1
@@ -135,12 +136,13 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                                     msg = dict_result[vid]
                                     req = comm.isend(msg,dest = cluster[child], tag = child)
         else:
-            for node in sub_tree:
-                if cluster[node] == rank:
-                    req = comm.irecv(source = cluster[my_mtg.parent(node)],tag = node)
+            for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
+                max_scale_id = my_mtg.component_roots(node)[0]
+                if cluster[max_scale_id] == rank:
+                    req = comm.irecv(source = cluster[my_mtg.parent(max_scale_id)],tag = max_scale_id)
                     msg = req.wait()
-                    dict_result[my_mtg.parent(node)] = msg
-                    for vid in pre_order2_with_filter(my_mtg,node,pre_order_filter = lambda v: v not in sub_tree):
+                    dict_result[my_mtg.parent(max_scale_id)] = msg
+                    for vid in pre_order2_with_filter(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
                         f()
                         dict_result[vid] = 1 + dict_result[my_mtg.parent(vid)]
                         if vid in connection_nodes:
