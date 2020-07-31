@@ -32,9 +32,16 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
     recv_results = {}
     start = MPI.Wtime()
     if rank == 0:
-        my_mtg = g.copy()
+        my_mtg = g#.copy()
         nb_cpus = size
-        
+        if my_mtg.property('cluster') != {}:
+            my_mtg.remove_property('cluster')
+        if my_mtg.property('sub_tree') != {}:
+            my_mtg.remove_property('sub_tree')
+        if my_mtg.property('connection_nodes') != {}:
+            my_mtg.remove_property('connection_nodes')
+        if my_mtg.max_scale() - 1 !=  0:
+            my_mtg.remove_scale(my_mtg.max_scale()-1)
         algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
         if algo in algos:
             if algo != First_Fit_Clustering_Paper:
@@ -42,6 +49,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
             else:
                 algo(my_mtg,nb_cpus)
             sub_tree = my_mtg.property('sub_tree')
+            
             plot_clusters_dependecy(my_mtg,nb_cluster=nb_cpus,file_name = algo.__name__ + '_dependecy')
             #plot_clusters_dict(my_mtg,nb_cluster = nb_cpus, file_name = algo.__name__ + 'full_plot')
             
@@ -160,6 +168,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
         print("Time it took for MPI ",end - start," using algorithm ",algo.__name__,"direction ",direction)
         for element in data:
             recv_results.update(element)
+        
        
 
        

@@ -27,7 +27,7 @@ dist = poisson(1., loc=1).rvs
 comm = MPI.COMM_WORLD  
 rank = comm.Get_rank()
 vid = test_mtg.add_component(test_mtg.root)
-simple_tree(test_mtg,vid,nb_children=6,nb_vertices=999)
+simple_tree(test_mtg,vid,nb_children=6,nb_vertices=99999)
 def f():
     for x in range(100000):
         x+=1
@@ -36,13 +36,12 @@ if rank == 0:
    
     start = timeit.default_timer()
     dict_result = {}
-    my_mtg = test_mtg.copy()
-    for node in pre_order(my_mtg,vid):
+    for node in pre_order(test_mtg,vid):
         if test_mtg.parent(node) == None:
             f()
             dict_result[node] = 1
         else:
-            dict_result[node] = 1 + dict_result[my_mtg.parent(node)]
+            dict_result[node] = 1 + dict_result[test_mtg.parent(node)]
             f()
     end = timeit.default_timer()
 
@@ -51,8 +50,8 @@ if rank == 0:
     
     start = timeit.default_timer()
     dict_result_1 = {}
-    for node in post_order2(my_mtg,vid):
-        dict_result_1[node] = 1 + sum([dict_result_1[v_id] for v_id in my_mtg.children(node)])
+    for node in post_order2(test_mtg,vid):
+        dict_result_1[node] = 1 + sum([dict_result_1[v_id] for v_id in test_mtg.children(node)])
         f()
     end = timeit.default_timer()
 
