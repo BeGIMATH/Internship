@@ -25,7 +25,7 @@ dist = poisson(1., loc=1).rvs
 vid = my_mtg.add_component(my_mtg.root)
 
 #random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99)
-simple_tree(my_mtg, vid, nb_children=2, nb_vertices=99999)
+random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99)
 
 
 #random_tree(my_mtg,vid, nb_children=dist,nb_vertices=99)
