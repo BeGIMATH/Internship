@@ -10,11 +10,10 @@ import psutil
 from mpi4py import MPI 
 from oawidgets.mtg import *
 
-
+import timeit
 def f():
-    for x in range(100000):
-        x+=1
-
+    for x in range(10000):
+       x+=1
 def distributed_tree_traversal(g,algo,direction,alpha=0.4):
     ''' Traversing the tree in a distributed way, were the work is distributed based on the clustering algorithm used
         :Parameterers:
@@ -32,29 +31,30 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
     recv_results = {}
     start = MPI.Wtime()
     if rank == 0:
-        my_mtg = g#.copy()
+        
         nb_cpus = size
-        if my_mtg.property('cluster') != {}:
-            my_mtg.remove_property('cluster')
-        if my_mtg.property('sub_tree') != {}:
-            my_mtg.remove_property('sub_tree')
-        if my_mtg.property('connection_nodes') != {}:
-            my_mtg.remove_property('connection_nodes')
-        if my_mtg.max_scale() - 1 !=  0:
-            my_mtg.remove_scale(my_mtg.max_scale()-1)
+        if g.property('cluster') != {}:
+            g.remove_property('cluster')
+        if g.property('sub_tree') != {}:
+            g.remove_property('sub_tree')
+        if g.property('connection_nodes') != {}:
+            g.remove_property('connection_nodes')
+        if g.max_scale() - 1 !=  0:
+            g.remove_scale(g.max_scale()-1)
         algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
         if algo in algos:
             if algo != First_Fit_Clustering_Paper:
-                algo(my_mtg,nb_cpus,alpha)
+                algo(g,nb_cpus,alpha)
             else:
-                algo(my_mtg,nb_cpus)
-            sub_tree = my_mtg.property('sub_tree')
-            
-            plot_clusters_dependecy(my_mtg,nb_cluster=nb_cpus,file_name = algo.__name__ + '_dependecy')
-            #plot_clusters_dict(my_mtg,nb_cluster = nb_cpus, file_name = algo.__name__ + 'full_plot')
-            
-            my_mtg.insert_scale(my_mtg.max_scale(), lambda vid: vid in sub_tree and vid != None)
-            #print("My vertices at new scale",my_mtg.vertices(scale=my_mtg.max_scale()-1))
+                algo(g,nb_cpus)
+            sub_tree = g.property('sub_tree')
+            connection_nodes = g.property('connection_nodes')
+            for node in sub_tree:
+                if g.parent(node) != None:
+                    connection_nodes[g.parent(node)] = True
+            plot_clusters_dependecy(g,nb_cluster=nb_cpus,file_name = algo.__name__ + '_dependecy')
+            g.insert_scale(g.max_scale(), lambda vid: vid in sub_tree and vid != None)
+        
         else:
             #Implement a raise error
             print("Wrong algorithm try one of them ",algos)
@@ -63,8 +63,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
         my_mtg = None
 
     
-    
-    my_mtg = comm.bcast(my_mtg,root=0)
+    my_mtg = comm.bcast(g,root=0)
     cluster = my_mtg.property('cluster')
     sub_tree = my_mtg.property('sub_tree')
     connection_nodes = my_mtg.property('connection_nodes')
@@ -159,10 +158,11 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                                     msg = dict_result[vid]
                                     req = comm.isend(msg,dest = cluster[child],tag = child)
                         
-
+    
     data = comm.gather(dict_result,root=0)
-           
     end = MPI.Wtime()
+           
+   
     comm.Barrier()
     if rank == 0:
         print("Time it took for MPI ",end - start," using algorithm ",algo.__name__,"direction ",direction)

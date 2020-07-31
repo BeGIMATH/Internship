@@ -29,8 +29,8 @@ rank = comm.Get_rank()
 vid = test_mtg.add_component(test_mtg.root)
 simple_tree(test_mtg,vid,nb_children=6,nb_vertices=99999)
 def f():
-    for x in range(100000):
-        x+=1
+    for x in range(10000):
+       x+=1
 
 if rank == 0:
    
@@ -58,8 +58,8 @@ if rank == 0:
     print("Time it took for the sequentail program ",end - start,"direction bottom up")
 
 
-    
 algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
+        
 for algo in algos:
     distributed_tree_traversal(test_mtg,algo,"bottom_up")
     distributed_tree_traversal(test_mtg,algo,"top_down")
