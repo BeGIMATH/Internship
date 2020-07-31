@@ -24,7 +24,8 @@ dist = poisson(1., loc=1).rvs
 
 vid = my_mtg.add_component(my_mtg.root)
 
-random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99)
+#random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99)
+simple_tree(my_mtg, vid, nb_children=2, nb_vertices=99999)
 
 
 #random_tree(my_mtg,vid, nb_children=dist,nb_vertices=99)
@@ -36,7 +37,7 @@ t6 = timeit.default_timer()
 """
 p = 10
 t3 = timeit.default_timer()
-Best_Fit_Clustering_No_Queue_1(my_mtg,p,0.4)
+Best_Fit_Clustering_level_order(my_mtg,p,0.4)
 t4 = timeit.default_timer()
 
 print("Time for clustering with the first algorithm using the queue", t4-t3)
@@ -47,7 +48,12 @@ for i in range(p):
     print("Cluster",i,"with lenght",len(clusters_2[i]))
     print("with nodes ",clusters_2[i])
 """
-
-print("Sub_tree roots ",my_mtg.property('sub_tree'))
-
-plot_clusters_dict(my_mtg,nb_clusters=p)
+sub_tree = my_mtg.property('sub_tree')
+cluster = my_mtg.property('cluster')
+print("my subtree roots ",sub_tree)
+my_mtg.insert_scale(my_mtg.max_scale(), lambda vid: vid in sub_tree)
+print("My vertices at new scale",my_mtg.vertices(scale=my_mtg.max_scale()-1))
+for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
+    max_scale_id = my_mtg.component_roots(node)[0]
+    print("Node ",node,"comonent_root",max_scale_id,"with cluster ",cluster[max_scale_id])
+#plot_clusters_dict(my_mtg,nb_clusters=p)

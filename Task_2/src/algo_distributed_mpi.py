@@ -43,10 +43,10 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                 algo(my_mtg,nb_cpus)
             sub_tree = my_mtg.property('sub_tree')
             plot_clusters_dependecy(my_mtg,nb_cluster=nb_cpus,file_name = algo.__name__ + '_dependecy')
-            plot_clusters_dict(my_mtg,nb_cluster = nb_cpus, file_name = algo.__name__ + 'full_plot')
+            #plot_clusters_dict(my_mtg,nb_cluster = nb_cpus, file_name = algo.__name__ + 'full_plot')
             
-            my_mtg.insert_scale(my_mtg.max_scale(), lambda vid: vid in sub_tree)
-            
+            my_mtg.insert_scale(my_mtg.max_scale(), lambda vid: vid in sub_tree and vid != None)
+            #print("My vertices at new scale",my_mtg.vertices(scale=my_mtg.max_scale()-1))
         else:
             #Implement a raise error
             print("Wrong algorithm try one of them ",algos)
