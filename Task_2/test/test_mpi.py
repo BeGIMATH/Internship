@@ -27,9 +27,9 @@ dist = poisson(1., loc=1).rvs
 comm = MPI.COMM_WORLD  
 rank = comm.Get_rank()
 vid = test_mtg.add_component(test_mtg.root)
-simple_tree(test_mtg,vid,nb_children=6,nb_vertices=99999)
+simple_tree(test_mtg,vid,nb_children=2,nb_vertices=9999)
 def f():
-    for x in range(10000):
+    for x in range(100000):
        x+=1
 
 if rank == 0:

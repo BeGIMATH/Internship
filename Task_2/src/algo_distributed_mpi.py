@@ -12,7 +12,7 @@ from oawidgets.mtg import *
 
 import timeit
 def f():
-    for x in range(10000):
+    for x in range(100000):
        x+=1
 def distributed_tree_traversal(g,algo,direction,alpha=0.4):
     ''' Traversing the tree in a distributed way, were the work is distributed based on the clustering algorithm used
