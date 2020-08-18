@@ -42,6 +42,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
             g.remove_property('connection_nodes')
         if g.max_scale() - 1 !=  0:
             g.remove_scale(g.max_scale()-1)
+        start = MPI.Wtime()
         algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order,First_Fit_Clustering_level_order]
         if algo in algos:
             if algo != First_Fit_Clustering_Paper:
