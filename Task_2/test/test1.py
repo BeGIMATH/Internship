@@ -25,49 +25,37 @@ dist = poisson(1., loc=1).rvs
 
 vid = my_mtg.add_component(my_mtg.root)
 
-#random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99)
-random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99999)
+random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99)
+#simple_tree(my_mtg, vid, nb_children=2, nb_vertices=99999)
 
 
 #random_tree(my_mtg,vid, nb_children=dist,nb_vertices=99)
 
-"""
-t5 = timeit.default_timer()
-clusters_1 = SFC_FF(my_mtg,vid,10)
-t6 = timeit.default_timer()
-"""
 p = 10
-t4 = timeit.default_timer()
-
-
-print("Time it takes to create a mtg", t4-t3)
-"""
-t1 = timeit.default_timer()
-test1_mtg = my_mtg.copy()
-t2 = timeit.default_timer()
-print("Time it takes to copy a mtg", t2-t1)
-
-
-
-t1 = timeit.default_timer()
-filename = 'dogs'
-outfile = open(filename,'wb')
-pickle.dump(my_mtg,outfile,protocol=3)
-outfile.close()
-t2 = timeit.default_timer()
-print("Time for serializing using pickle", t2-t1)
-
-
-t1 = timeit.default_timer()
-infile = open(filename,'rb')
-test_mtg = pickle.load(infile)
-infile.close()
-t2 = timeit.default_timer()
-print("Time for de-serializing using pickle", t2-t1)
-"""
-algos = [Best_Fit_Clustering_level_order]
-for algo in algos:
-    t1 = timeit.default_timer()
-    algo(my_mtg,p,0.4)
-    t2 = timeit.default_timer()
-    print("Time for clustering with the ", algo.__name__ ," algorithm", t2-t1)
+algos = [Best_Fit_Clustering_level_order,First_Fit_Clustering_level_order]
+tree_size = [10000,100000,100000]
+nb_clusters = [5,10,20]      
+for t_size in tree_size:
+    my_mtg = MTG()
+    dist = poisson(1., loc=1).rvs         
+    vid = my_mtg.add_component(my_mtg.root)
+    random_tree(my_mtg,vid,nb_children=dist,nb_vertices=t_size)
+    for nb_clust in nb_clusters:
+        for algo in algos:
+            if my_mtg.property('cluster') != {}:
+                my_mtg.remove_property('cluster')
+            if my_mtg.property('sub_tree') != {}:
+                my_mtg.remove_property('sub_tree')
+    
+            t1 = timeit.default_timer()
+            if algo != First_Fit_Clustering_Paper:
+                algo(my_mtg,p,0.4)
+            else:
+                algo(my_mtg,p)
+    
+            t2 = timeit.default_timer()
+  
+            print("Time for clustering with the ", algo.__name__ ," algorithm", t2-t1)
+    
+            plot_clusters_dependecy(my_mtg,nb_cluster=p,file_name = algo.__name__ + '_dependecy')
+    

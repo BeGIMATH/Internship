@@ -19,19 +19,13 @@ from oawidgets.mtg import plot
 from oawidgets.plantgl import PlantGL
 from IPython.display import HTML
 from IPython.display import IFrame
-
 from mpi4py import MPI
 import timeit
-test_mtg = MTG()#'../data/noylum2.mtg')
-dist = poisson(1., loc=1).rvs
-comm = MPI.COMM_WORLD  
-rank = comm.Get_rank()
-vid = test_mtg.add_component(test_mtg.root)
-simple_tree(test_mtg,vid,nb_children=2,nb_vertices=9999)
-def f():
-    for x in range(100000):
-       x+=1
 
+def f():
+    for x in range(10000):
+       x+=1
+"""
 if rank == 0:
    
     start = timeit.default_timer()
@@ -56,12 +50,18 @@ if rank == 0:
     end = timeit.default_timer()
 
     print("Time it took for the sequentail program ",end - start,"direction bottom up")
+"""
+algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order,First_Fit_Clustering_level_order]
+tree_size = [1000,10000,100000]
+for t_size in tree_size:
+    my_mtg = MTG()
+    dist = poisson(1., loc=1).rvs         
+    vid = my_mtg.add_component(my_mtg.root)
+    random_tree(my_mtg,vid,nb_children=dist,nb_vertices=t_size)
+    for algo in algos:
+        distributed_tree_traversal(test_mtg,algo,"bottom_up")
+        distributed_tree_traversal(test_mtg,algo,"top_down")
 
 
-algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
-        
-for algo in algos:
-    distributed_tree_traversal(test_mtg,algo,"bottom_up")
-    distributed_tree_traversal(test_mtg,algo,"top_down")
 
 

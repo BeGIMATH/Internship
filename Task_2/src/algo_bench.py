@@ -125,7 +125,7 @@ def Best_Fit_Clustering_Paper(T, p, alpha):
             remain = remain - len(sub)
             
             first_time = False
-    
+#Slower than the first one, deprecated   
 def Best_Fit_Clustering_Queue(T,p,alpha):
     ''' Clustering Trees based on the paper of Hambrusch and Liu but modified for better performance
 
@@ -137,6 +137,8 @@ def Best_Fit_Clustering_Queue(T,p,alpha):
             All the clusters as a list of lists of all the nodes of the tree
         :Returns Type:
             List
+
+        Deprecated, dont use this algorithm
     '''
     cluster = T.property('cluster')
     remain = 0
@@ -415,10 +417,9 @@ def Best_Fit_Clustering_level_order(T,p, alpha):
 """
 Experimental work
 """
-
-def Best_Fit_Clustering_No_Queue_1(T,p, alpha):
-    ''' Clustering MTG(Tree) based on the paper of Hambrusch and Liu but modified for better performance
-    Find as many subtrees as possible by just one traversal using the level-order traversal
+def First_Fit_Clustering_level_order(T,p,alpha):
+    ''' Clustering Trees based on the paper of Hambrusch and Liu but modified for better performance
+    Now, it uses level-order traversal instead of post-order to find the trees
 
         :Parameters:
          - `T` (MTG) The MTG(Tree) which we want to cluster
@@ -432,62 +433,44 @@ def Best_Fit_Clustering_No_Queue_1(T,p, alpha):
     cluster = T.property('cluster')
     sub_tree = T.property('sub_tree')
     c_omponent = T.component_roots(T.root)[0]
-    queue = []
-    queue.append(c_omponent)
-    node = queue.pop(0)
-    for vid in T.children(node):
-        queue.append(vid)
-
-    remain = 0
-
-    weight = np.zeros(len(T))
-    for v in post_order(T, c_omponent):
-        weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
+    vtx_id = c_omponent
+    weights = np.zeros(len(T))
+    for v in post_order(T,c_omponent):
+        weights[v] = 1 + sum([weights[vid] for vid in T.children(v)])
+    weights_copy = weights
+    visited = set([])
+    queue = [vtx_id]
     c = int(len(T)/p)
-
-    def Best_Fit(remain, Q, last_cluster,cluster_index):
-
-        sub = None
-
-        if last_cluster:
-            sub = c_omponent
-
-        else:
-            if len(queue) > 0:
-                while len(queue) > 0:
-                    node = queue.pop(0)
-                    if weight[node] <= (1+alpha)*remain and weight[node] > (1-alpha/2)*remain:
-                        sub = node
-                        break
-                    if weight[node] > (1+alpha)*remain:
-                        for vid in T.children(node):
-                            queue.append(vid)
-            else:
-                queue.append(c_omponent)
-                while len(queue) > 0:
-                    node = queue.pop(0)
-                    if weight[node] <= (1+alpha)*remain and weight[node] > (1-alpha/2)*remain:
-                        sub = node
-                        break
-                    if weight[node] > (1+alpha)*remain:
-                        for vid in T.children(node):
-                            queue.append(vid)
-
-        index = weight[sub]
-        for w in list(ancestors(T, sub)):
-            weight[w] = weight[w] - index
-
-        sub_tree[sub] = cluster_index
-        for v in post_order2(T,sub,pre_order_filter = lambda v: v not in sub_tree):
-            cluster[v] = cluster_index
- 
-    remain = 0
-    last_cluster = False
-    for i in reversed(range(p)):
-        Qu = Priority_queue(weight)
-
-        target = c
-        if i == p-1:
-            last_cluster = True
-        Best_Fit(target, Qu, last_cluster,i)
+    remain = c
+    cluster_considered = p-1
+    
+    while queue:
         
+        vtx_id = queue.pop()
+        for vid in T.children(vtx_id):
+            if weights[vid] >= (1-alpha/2)*remain and weights[vid] <= (1+alpha)*remain:
+                sub_tree[vid] = cluster_considered
+                cluster_considered -= 1
+            
+            elif cluster_considered == 0:
+                sub_tree[c_omponent] = cluster_considered
+                break
+            
+            else:
+                queue.append(vid)
+    if cluster_considered != 0:
+        sub_tree[c_omponent] = 0
+    
+    for node in sub_tree:
+        for v in post_order2(T, node, pre_order_filter=lambda v: v not in sub_tree):
+            cluster[v] = sub_tree[node]
+    
+
+            
+
+
+        
+
+
+
+

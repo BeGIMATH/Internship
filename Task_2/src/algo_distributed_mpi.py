@@ -12,8 +12,9 @@ from oawidgets.mtg import *
 
 import timeit
 def f():
-    for x in range(100000):
+    for x in range(10000):
        x+=1
+
 def distributed_tree_traversal(g,algo,direction,alpha=0.4):
     ''' Traversing the tree in a distributed way, were the work is distributed based on the clustering algorithm used
         :Parameterers:
@@ -41,7 +42,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
             g.remove_property('connection_nodes')
         if g.max_scale() - 1 !=  0:
             g.remove_scale(g.max_scale()-1)
-        algos = [Best_Fit_Clustering_Paper,Best_Fit_Clustering_Queue,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
+        algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order,First_Fit_Clustering_level_order]
         if algo in algos:
             if algo != First_Fit_Clustering_Paper:
                 algo(g,nb_cpus,alpha)
@@ -52,7 +53,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
             for node in sub_tree:
                 if g.parent(node) != None:
                     connection_nodes[g.parent(node)] = True
-            plot_clusters_dependecy(g,nb_cluster=nb_cpus,file_name = algo.__name__ + '_dependecy')
+            #plot_clusters_dependecy(g,nb_cluster=nb_cpus,file_name = algo.__name__ + '_dependecy')
             g.insert_scale(g.max_scale(), lambda vid: vid in sub_tree and vid != None)
         
         else:

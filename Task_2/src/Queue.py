@@ -2,8 +2,6 @@ from openalea.mtg.mtg import *
 from openalea.mtg.algo import ancestors
 from openalea.mtg.io import *
 from openalea.mtg.traversal import *
-from scoop import futures, shared
-from itertools import cycle
 import numpy as np
 import math
 
