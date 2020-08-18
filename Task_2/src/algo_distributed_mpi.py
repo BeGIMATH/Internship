@@ -166,7 +166,8 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
    
     comm.Barrier()
     if rank == 0:
-        print("Time it took for MPI ",end - start," using algorithm ",algo.__name__,"direction ",direction)
+        print("Using algorithm ",algo.__name__,"------------------------------------------")
+        print("Time it took for MPI ",end - start,"with direction ",direction)
         for element in data:
             recv_results.update(element)
         
