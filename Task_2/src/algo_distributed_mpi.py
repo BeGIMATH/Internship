@@ -60,7 +60,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
             #Implement a raise error
             print("Wrong algorithm try one of them ",algos)
             
-    elif:
+    else:
         my_mtg = None
 
     
