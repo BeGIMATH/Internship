@@ -58,9 +58,10 @@ for t_size in tree_size:
     dist = poisson(1., loc=1).rvs         
     vid = my_mtg.add_component(my_mtg.root)
     random_tree(my_mtg,vid,nb_children=dist,nb_vertices=t_size)
-    for algo in algos:
-        distributed_tree_traversal(test_mtg,algo,"bottom_up")
-        distributed_tree_traversal(test_mtg,algo,"top_down")
+    for nb_clust in nb_clusters:
+        for algo in algos:
+            distributed_tree_traversal(test_mtg,algo,"bottom_up")
+            distributed_tree_traversal(test_mtg,algo,"top_down")
 
 
 
