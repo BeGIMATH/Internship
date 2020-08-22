@@ -3,7 +3,7 @@
 
 
 
-for n in 10 20 100
+for n in 2 4 
 do
    echo "-----------------Parallel processing------------------- for $n cores"
    mpiexec -n $n python test_mpi.py

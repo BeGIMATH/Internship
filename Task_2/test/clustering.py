@@ -18,7 +18,7 @@ from algo import *
 
 my_mtg = MTG()
 #my_mtg = MTG('consolidated_mango3d.mtg')
-
+np.random.seed(seed=1)
 dist = poisson(1., loc=1).rvs
 
 #vid = my_mtg.add_component(my_mtg.root)
@@ -33,15 +33,19 @@ t5 = timeit.default_timer()
 clusters_1 = SFC_FF(my_mtg,vid,10)
 t6 = timeit.default_timer()
 """
-p = 10
-t3 = timeit.default_timer()
-clusters = Best_Fit_Clustering_Paper(my_mtg, p, 0.4)
-t4 = timeit.default_timer()
 
-print("Time for clustering with the first algorithm using the queue", t4-t3)
-sub_tree = my_mtg.property('sub_tree')
-c_luster = my_mtg.property('cluster')
-
-g.insert_scale(g.max_scale(), lambda vid: g.property('sub_tree').get(vid,None) != None)
+#A = list(post_order(my_mtg,my_mtg.root))
+#print(A)
 
 
+my1_mtg = MTG()
+#my_mtg = MTG('consolidated_mango3d.mtg')
+np.random.seed(seed=1)
+dist = poisson(1., loc=1).rvs
+
+#vid = my_mtg.add_component(my_mtg.root)
+
+random_tree(my1_mtg, my1_mtg.root, nb_children=dist, nb_vertices=999999)
+
+A = list(post_order(my1_mtg,my1_mtg.root))
+print(A)

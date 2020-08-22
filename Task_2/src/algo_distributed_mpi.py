@@ -8,14 +8,14 @@ sys.path.append("../../Task_2/src/")
 from algo_bench import *
 import psutil
 from mpi4py import MPI 
-from oawidgets.mtg import *
+#from oawidgets.mtg import *
 
 import timeit
 def f():
-    for x in range(10000):
+    for x in range(10):
        x+=1
 
-def distributed_tree_traversal(g,algo,direction,alpha=0.4):
+def distributed_tree_traversal(g,algo,direction,c_pu,t_size,alpha=0.4):
     ''' Traversing the tree in a distributed way, were the work is distributed based on the clustering algorithm used
         :Parameterers:
         -   'g' The tree we want to traverse
@@ -33,7 +33,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
     start = MPI.Wtime()
     if rank == 0:
         
-        nb_cpus = size
+        nb_cpus = c_pu
         if g.property('cluster') != {}:
             g.remove_property('cluster')
         if g.property('sub_tree') != {}:
@@ -59,7 +59,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
         
         else:
             #Implement a raise error
-            print("Wrong algorithm try one of them ",algos)
+            print("Wrong algorithm try one of these ",algos)
             
     else:
         my_mtg = None
@@ -75,7 +75,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
    
     
     if direction == "bottom_up":
-        if rank != 0:
+        if rank != 0 and rank < c_pu:
             for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
                 max_scale_id = my_mtg.component_roots(node)[0]
                 if cluster[max_scale_id] == rank:
@@ -109,7 +109,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                                     msg = dict_result[vid]
                                     req = comm.isend(msg,dest = cluster[my_mtg.parent(vid)],tag = vid)
 
-        else:
+        elif rank == 0:
             for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
                 max_scale_id = my_mtg.component_roots(node)[0]
                 if cluster[max_scale_id] == rank:
@@ -127,6 +127,8 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                         else:
                             f()
                             dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
+        else:
+            dict_result = {}
     elif direction == "top_down":
         if rank == 0:
             for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
@@ -144,7 +146,7 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                                 if cluster[child] != rank:
                                     msg = dict_result[vid]
                                     req = comm.isend(msg,dest = cluster[child], tag = child)
-        else:
+        elif rank != 0 and rank < c_pu:
             for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
                 max_scale_id = my_mtg.component_roots(node)[0]
                 if cluster[max_scale_id] == rank:
@@ -160,15 +162,16 @@ def distributed_tree_traversal(g,algo,direction,alpha=0.4):
                                     msg = dict_result[vid]
                                     req = comm.isend(msg,dest = cluster[child],tag = child)
                         
-    
+        else:
+            dict_result = {}
     data = comm.gather(dict_result,root=0)
     end = MPI.Wtime()
            
-   
+    
     comm.Barrier()
     if rank == 0:
         print("Using algorithm ",algo.__name__,"------------------------------------------")
-        print("Time it took for MPI ",end - start,"with direction ",direction)
+        print("Time it took for MPI ",end - start,"with a tree of size",t_size+1,"with direction ",direction,"with ",c_pu,"workers")
         for element in data:
             recv_results.update(element)
         

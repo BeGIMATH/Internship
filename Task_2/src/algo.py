@@ -10,6 +10,7 @@ def Best_Fit_Clustering_Paper(T,p,alpha):
     
     c = int(len(T)/p)
     color = T.property('color')
+    
     def Best_Fit(remain,first_time,Q,last_cluster):
        
         sub = None

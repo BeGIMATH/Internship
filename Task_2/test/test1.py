@@ -20,7 +20,7 @@ from algo_bench import *
 t3 = timeit.default_timer()
 my_mtg = MTG()
 #my_mtg = MTG('consolidated_mango3d.mtg')
-
+np.random.seed(seed=233423)
 dist = poisson(1., loc=1).rvs
 
 vid = my_mtg.add_component(my_mtg.root)
