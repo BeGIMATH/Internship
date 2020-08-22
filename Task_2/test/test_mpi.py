@@ -6,9 +6,6 @@ from scipy.stats import poisson, binom
 import os
 import timeit
 import sys
-from oawidgets.mtg import *
-from oawidgets.plantgl import PlantGL
-from openalea.mtg.draw import *
 import sys
 
 sys.path.append("../../Task_2/src/")
