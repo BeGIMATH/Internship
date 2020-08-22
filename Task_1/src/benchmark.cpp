@@ -341,7 +341,7 @@ void threads_multi_function(int threads_to_use, int list_length)
 
 void pure_mpi_function(int list_length)
 {
-    ² int size;
+    int size;
     int rank;
 
     int mpiAlreadyInitialized = 0;
