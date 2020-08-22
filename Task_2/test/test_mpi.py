@@ -12,16 +12,12 @@ sys.path.append("../../Task_2/src/")
 
 from algo_bench import *
 from algo_distributed_mpi import *
-from oawidgets.mtg import plot
-from oawidgets.plantgl import PlantGL
 from IPython.display import HTML
 from IPython.display import IFrame
 from mpi4py import MPI
 import timeit
 
-def f():
-    for x in range(10000):
-       x+=1
+
 """
 if rank == 0:
    
@@ -48,17 +44,16 @@ if rank == 0:
 
     print("Time it took for the sequentail program ",end - start,"direction bottom up")
 """
-algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order,First_Fit_Clustering_level_order]
+algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
 tree_size = [99999,999999]
-nb_cpus = [4,8,16,32,64,128]
+nb_cpus = [8,16,32,64,128]
 for t_size in tree_size:
     test_mtg = MTG()
     dist = poisson(1., loc=1).rvs         
     vid = test_mtg.add_component(test_mtg.root)
     random_tree(test_mtg,vid,nb_children=dist,nb_vertices=t_size)
-
-    for algo in algos:
-        for c_pu in nb_cpus:
+    for c_pu in nb_cpus:
+        for algo in algos:
             distributed_tree_traversal(test_mtg,algo,"bottom_up",c_pu,t_size)   
             distributed_tree_traversal(test_mtg,algo,"top_down",c_pu,t_size)
 

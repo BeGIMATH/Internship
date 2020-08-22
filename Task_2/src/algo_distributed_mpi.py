@@ -12,7 +12,7 @@ from mpi4py import MPI
 
 import timeit
 def f():
-    for x in range(10):
+    for x in range(10000):
        x+=1
 
 def distributed_tree_traversal(g,algo,direction,c_pu,t_size,alpha=0.4):
