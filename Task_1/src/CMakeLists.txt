@@ -31,21 +31,5 @@ TARGET_LINK_LIBRARIES(bench_multi  benchmark)
 ADD_EXECUTABLE(bench_MPI bench_MPI.cpp)
 TARGET_LINK_LIBRARIES(bench_MPI benchmark)
 
-ADD_EXECUTABLE(bench_seq_opt bench_seq_opt.cpp)
-TARGET_LINK_LIBRARIES(bench_seq_opt  benchmark) 
-
-ADD_EXECUTABLE(bench_thread_opt bench_thread_opt.cpp)
-TARGET_LINK_LIBRARIES(bench_thread_opt  benchmark) 
-
-ADD_EXECUTABLE(bench_multi_opt bench_multi_opt.cpp)
-TARGET_LINK_LIBRARIES(bench_multi_opt  benchmark) 
-
-ADD_EXECUTABLE(bench_MPI_opt bench_MPI_opt.cpp)
-TARGET_LINK_LIBRARIES(bench_MPI_opt benchmark)
-
-ADD_EXECUTABLE(pickle_test pickle_test.cpp)
-TARGET_LINK_LIBRARIES(pickle_test  Boost::python  Python3::Python Boost::system benchmark)
-
-
 
 FILE(COPY execute.sh DESTINATION ${CMAKE_BINARY_DIR}/../run)
