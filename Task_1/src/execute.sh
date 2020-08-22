@@ -6,48 +6,21 @@ echo "--------------------- Sequential --------------------"
 ./bench_seq 
 
 echo "----------------- Multithreading--------------------" 
-for n in 2 4 6
+for n in 4 8 16 32 64 128
 do
    ./bench_thread $n
 done
 
 echo "-------- Multithreading with multiinterpreters--------"
-for n in 2 4 6
+for n in 4 8 16 32 64 128
 do
    ./bench_multi $n
 done
 
 echo "-----------------Parallel processing-------------------"
 
-for n in 2 4 6
+for n in 4 8 16 32 64 128
 do
    mpirun -np $n ./bench_MPI
 done
-
-
-echo "------------------Optimized Version-------------------"
-
-echo "--------------------- Sequential --------------------"
-./bench_seq_opt
-
-echo "----------------- Multithreading--------------------" 
-for n in 2 4 6
-do
-   ./bench_thread_opt $n
-done
-
-echo "-------- Multithreading with multiinterpreters--------"
-for n in 2 4 6
-do
-   ./bench_multi_opt $n
-done
-
-echo "-----------------Parallel processing-------------------"
-
-for n in 2 4 6
-do
-   mpirun -np $n ./bench_MPI_opt
-done
-
-
 
