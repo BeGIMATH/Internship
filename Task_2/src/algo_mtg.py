@@ -23,14 +23,14 @@ def Best_Fit_Clustering_MTG(T, p, alpha):
 
     a = T.roots(T.max_scale())
     c_omponent = a[0]
-
+    
     weight = np.zeros(len(T))
     for v in post_order(T, c_omponent):
         weight[v] = 1 + sum([weight[vid] for vid in T.children(v)])
 
     c = int(len(T)/p)
-    color = T.property('color')
-
+    color = set()
+    
     def Best_Fit(remain, Q, last_cluster, cluster_index):
 
         sub = None

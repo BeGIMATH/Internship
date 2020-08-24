@@ -16,21 +16,19 @@ import timeit
 import sys
 import pickle 
 sys.path.append("../../Task_2/src/")
-from algo_bench import *
+
+from algo_bench_mtg import *
+from algo_mtg import *
 t3 = timeit.default_timer()
-my_mtg = MTG()
-#my_mtg = MTG('consolidated_mango3d.mtg')
-np.random.seed(seed=233423)
-dist = poisson(1., loc=1).rvs
+#my_mtg = MTG()
+my_mtg = MTG('../data/consolidated_mango3d.mtg')
 
-vid = my_mtg.add_component(my_mtg.root)
 
-random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99)
 #simple_tree(my_mtg, vid, nb_children=2, nb_vertices=99999)
-
-
+Best_Fit_Clustering_level_order_MTG(my_mtg,10,0.4)
+print(my_mtg.property('cluster'))
 #random_tree(my_mtg,vid, nb_children=dist,nb_vertices=99)
-
+"""
 p = 10
 algos = [Best_Fit_Clustering_level_order,First_Fit_Clustering_level_order]
 tree_size = [10000,100000,100000]
@@ -59,3 +57,4 @@ for t_size in tree_size:
     
             plot_clusters_dependecy(my_mtg,nb_cluster=p,file_name = algo.__name__ + '_dependecy')
     
+"""

@@ -6,6 +6,7 @@ import timeit
 import sys
 sys.path.append("../../Task_2/src/")
 from algo_bench import *
+from algo_bench_mtg import *
 import psutil
 from mpi4py import MPI 
 #from oawidgets.mtg import *
@@ -15,7 +16,7 @@ def f():
     for x in range(10000):
        x+=1
 
-def distributed_tree_traversal(g,algo,direction,c_pu,t_size,alpha=0.4):
+def distributed_tree_traversal(g,algo,direction,c_pu,t_size=0,alpha=0.4):
     ''' Traversing the tree in a distributed way, were the work is distributed based on the clustering algorithm used
         :Parameterers:
         -   'g' The tree we want to traverse
@@ -43,9 +44,10 @@ def distributed_tree_traversal(g,algo,direction,c_pu,t_size,alpha=0.4):
         if g.max_scale() - 1 !=  0:
             g.remove_scale(g.max_scale()-1)
         start = MPI.Wtime()
-        algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order,First_Fit_Clustering_level_order]
+        algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order,First_Fit_Clustering_level_order,Best_Fit_Clustering_Paper_MTG,First_Fit_Clustering_Paper_MTG,Best_Fit_Clustering_post_order_MTG,Best_Fit_Clustering_level_order_MTG]
+
         if algo in algos:
-            if algo != First_Fit_Clustering_Paper:
+            if algo != First_Fit_Clustering_Paper or algo != First_Fit_Clustering_Paper_MTG :
                 algo(g,nb_cpus,alpha)
             else:
                 algo(g,nb_cpus)
