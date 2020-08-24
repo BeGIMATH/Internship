@@ -50,17 +50,10 @@ nb_cpus = [4]
 test_mtg = MTG('../data/consolidated_mango3d.mtg')
 
 #nb_cpus = [8,16,32,64,128]
-for t_size in tree_size:
-    for c_pu in nb_cpus:
-        for algo in algos:
-            distributed_tree_traversal(test_mtg,algo,"bottom_up",c_pu,t_size)   
-            distributed_tree_traversal(test_mtg,algo,"top_down",c_pu,t_size)
 
-
-
-
-
-
-
+for c_pu in nb_cpus:
+    for algo in algos:
+        distributed_tree_traversal(test_mtg,algo,"bottom_up",c_pu)   
+        distributed_tree_traversal(test_mtg,algo,"top_down",c_pu)
 
 

@@ -18,8 +18,7 @@ def Best_Fit_Clustering_Paper_MTG(T, p, alpha):
     C = [[] for i in range(p)]
     remain = 0
     weight = np.zeros(len(T))
-    #weight = weight.astype(int)
-    print(len(weight))
+   
     internode_root = T.roots(T.max_scale())
     c_omponent = internode_root[0]
     for v in post_order(T,c_omponent):

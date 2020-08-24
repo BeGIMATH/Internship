@@ -33,7 +33,6 @@ def distributed_tree_traversal(g,algo,direction,c_pu,t_size=0,alpha=0.4):
     recv_results = {}
     start = MPI.Wtime()
     if rank == 0:
-        
         nb_cpus = c_pu
         if g.property('cluster') != {}:
             g.remove_property('cluster')
@@ -43,11 +42,12 @@ def distributed_tree_traversal(g,algo,direction,c_pu,t_size=0,alpha=0.4):
             g.remove_property('connection_nodes')
         if g.max_scale() - 1 !=  0:
             g.remove_scale(g.max_scale()-1)
-        start = MPI.Wtime()
+        
         algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order,First_Fit_Clustering_level_order,Best_Fit_Clustering_Paper_MTG,First_Fit_Clustering_Paper_MTG,Best_Fit_Clustering_post_order_MTG,Best_Fit_Clustering_level_order_MTG]
-
+        start = MPI.Wtime()
         if algo in algos:
-            if algo != First_Fit_Clustering_Paper or algo != First_Fit_Clustering_Paper_MTG :
+            
+            if algo != First_Fit_Clustering_Paper and algo != First_Fit_Clustering_Paper_MTG :
                 algo(g,nb_cpus,alpha)
             else:
                 algo(g,nb_cpus)
@@ -56,17 +56,20 @@ def distributed_tree_traversal(g,algo,direction,c_pu,t_size=0,alpha=0.4):
             for node in sub_tree:
                 if g.parent(node) != None:
                     connection_nodes[g.parent(node)] = True
-            #plot_clusters_dependecy(g,nb_cluster=nb_cpus,file_name = algo.__name__ + '_dependecy')
             g.insert_scale(g.max_scale(), lambda vid: vid in sub_tree and vid != None)
         
         else:
-            #Implement a raise error
-            print("Wrong algorithm try one of these ",algos)
             
+            raise ("Wrong algorithm try one of these ",algos)
+        end = MPI.Wtime()
+        print("Using algorithm ",algo.__name__,"------------------------------------------")
+        
+        print("Time it take to partition the tree using ",algo.__name__,end -start)
+        
     else:
         my_mtg = None
 
-    
+    start_1 = MPI.Wtime()
     my_mtg = comm.bcast(g,root=0)
     cluster = my_mtg.property('cluster')
     sub_tree = my_mtg.property('sub_tree')
@@ -76,104 +79,108 @@ def distributed_tree_traversal(g,algo,direction,c_pu,t_size=0,alpha=0.4):
             connection_nodes[my_mtg.parent(node)] = True
    
     
-    if direction == "bottom_up":
-        if rank != 0 and rank < c_pu:
-            for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
-                max_scale_id = my_mtg.component_roots(node)[0]
-                if cluster[max_scale_id] == rank:
-                    if my_mtg.is_leaf(node):
-                        for vid in post_order(my_mtg,max_scale_id):
-                            f()
-                            dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
-                            if vid == max_scale_id:
-                                msg = dict_result[max_scale_id]
-                                req = comm.isend(msg,dest = cluster[my_mtg.parent(max_scale_id)],tag = max_scale_id)
+    
+    if rank != 0 and rank < c_pu:
+        for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
+            max_scale_id = my_mtg.component_roots(node)[0]
+            if cluster[max_scale_id] == rank:
+                if my_mtg.is_leaf(node):
+                    for vid in post_order(my_mtg,max_scale_id):
+                        f()
+                        dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
+                        if vid == max_scale_id:
+                            msg = dict_result[max_scale_id]
+                            req = comm.isend(msg,dest = cluster[my_mtg.parent(max_scale_id)],tag = max_scale_id)
                                     
-                    else:
-                        for vid in post_order2(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
-                            if vid in connection_nodes:
-                                f()
-                                dict_result[vid] = 1
-                                for child in my_mtg.children(vid):         
-                                    if cluster[child] != rank:
-                                        req = comm.irecv(source = cluster[child],tag = child)
-                                        msg = req.wait()
-                                        dict_result[vid] += msg
-                                    else:
-                                        dict_result[vid] += dict_result[child]
-                                if vid == max_scale_id:
-                                    msg = dict_result[vid]
-                                    req = comm.isend(msg,dest = cluster[my_mtg.parent(vid)],tag = vid)
-                            else:
-                                f()
-                                dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
-                                if vid == max_scale_id:
-                                    msg = dict_result[vid]
-                                    req = comm.isend(msg,dest = cluster[my_mtg.parent(vid)],tag = vid)
-
-        elif rank == 0:
-            for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
-                max_scale_id = my_mtg.component_roots(node)[0]
-                if cluster[max_scale_id] == rank:
+                else:
                     for vid in post_order2(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
                         if vid in connection_nodes:
                             f()
                             dict_result[vid] = 1
-                            for child in my_mtg.children(vid):
+                            for child in my_mtg.children(vid):         
                                 if cluster[child] != rank:
                                     req = comm.irecv(source = cluster[child],tag = child)
                                     msg = req.wait()
                                     dict_result[vid] += msg
                                 else:
                                     dict_result[vid] += dict_result[child]
+                            if vid == max_scale_id:
+                                msg = dict_result[vid]
+                                req = comm.isend(msg,dest = cluster[my_mtg.parent(vid)],tag = vid)
                         else:
                             f()
                             dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
-        else:
-            dict_result = {}
-    elif direction == "top_down":
-        if rank == 0:
-            for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
-                max_scale_id = my_mtg.component_roots(node)[0]
-                if cluster[max_scale_id] == rank:
-                    for vid in pre_order2_with_filter(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
-                        if my_mtg.parent(vid) == None:
-                            f()
-                            dict_result[vid] = 1
-                        else:
-                            f()
-                            dict_result[vid] = 1 + dict_result[my_mtg.parent(vid)]
-                        if vid in connection_nodes:
-                            for child in my_mtg.children(vid):
-                                if cluster[child] != rank:
-                                    msg = dict_result[vid]
-                                    req = comm.isend(msg,dest = cluster[child], tag = child)
-        elif rank != 0 and rank < c_pu:
-            for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
-                max_scale_id = my_mtg.component_roots(node)[0]
-                if cluster[max_scale_id] == rank:
-                    req = comm.irecv(source = cluster[my_mtg.parent(max_scale_id)],tag = max_scale_id)
-                    msg = req.wait()
-                    dict_result[my_mtg.parent(max_scale_id)] = msg
-                    for vid in pre_order2_with_filter(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
+                            if vid == max_scale_id:
+                                msg = dict_result[vid]
+                                req = comm.isend(msg,dest = cluster[my_mtg.parent(vid)],tag = vid)
+
+    elif rank == 0:
+        for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
+            max_scale_id = my_mtg.component_roots(node)[0]
+            if cluster[max_scale_id] == rank:
+                for vid in post_order2(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
+                    if vid in connection_nodes:
+                        f()
+                        dict_result[vid] = 1
+                        for child in my_mtg.children(vid):
+                            if cluster[child] != rank:
+                                req = comm.irecv(source = cluster[child],tag = child)
+                                msg = req.wait()
+                                dict_result[vid] += msg
+                            else:
+                                dict_result[vid] += dict_result[child]
+                    else:
+                        f()
+                        dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
+    else:
+        dict_result = {}
+    comm.Barrier()
+    end_1 = MPI.Wtime()
+    start_2 = MPI.Wtime()
+    
+    if rank == 0:
+        for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
+            max_scale_id = my_mtg.component_roots(node)[0]
+            if cluster[max_scale_id] == rank:
+                for vid in pre_order2_with_filter(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
+                    if my_mtg.parent(vid) == None:
+                        f()
+                        dict_result[vid] = 1
+                    else:
                         f()
                         dict_result[vid] = 1 + dict_result[my_mtg.parent(vid)]
-                        if vid in connection_nodes:
-                            for child in my_mtg.children(vid):
-                                if cluster[child] != rank:
-                                    msg = dict_result[vid]
-                                    req = comm.isend(msg,dest = cluster[child],tag = child)
+                    if vid in connection_nodes:
+                        for child in my_mtg.children(vid):
+                            if cluster[child] != rank:
+                                msg = dict_result[vid]
+                                req = comm.isend(msg,dest = cluster[child], tag = child)
+    elif rank != 0 and rank < c_pu:
+        for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
+            max_scale_id = my_mtg.component_roots(node)[0]
+            if cluster[max_scale_id] == rank:
+                req = comm.irecv(source = cluster[my_mtg.parent(max_scale_id)],tag = max_scale_id)
+                msg = req.wait()
+                dict_result[my_mtg.parent(max_scale_id)] = msg
+                for vid in pre_order2_with_filter(my_mtg,max_scale_id,pre_order_filter = lambda v: v not in sub_tree):
+                    f()
+                    dict_result[vid] = 1 + dict_result[my_mtg.parent(vid)]
+                    if vid in connection_nodes:
+                        for child in my_mtg.children(vid):
+                            if cluster[child] != rank:
+                                msg = dict_result[vid]
+                                req = comm.isend(msg,dest = cluster[child],tag = child)
                         
-        else:
-            dict_result = {}
+    else:
+        dict_result = {}
     data = comm.gather(dict_result,root=0)
-    end = MPI.Wtime()
-           
     
     comm.Barrier()
+    end_2 = MPI.Wtime()
     if rank == 0:
         print("Using algorithm ",algo.__name__,"------------------------------------------")
-        print("Time it took for MPI ",end - start,"with a tree of size",t_size+1,"with direction ",direction,"with ",c_pu,"workers")
+        print("Time it took for MPI ",end_1 - start_1,"with direction bottom up"," with ",c_pu,"workers")
+        print("Time it took for MPI ",end_2 - start_2,"with direction top down"," with ",c_pu,"workers")
+        
         for element in data:
             recv_results.update(element)
         

@@ -45,8 +45,8 @@ if rank == 0:
     print("Time it took for the sequentail program ",end - start,"direction bottom up")
 """
 algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
-tree_size = [99999,999999]
-nb_cpus = [8,16,32,64,128]
+tree_size = [99999]
+nb_cpus = [4]#,16,32,64,128]
 for t_size in tree_size:
     test_mtg = MTG()
     dist = poisson(1., loc=1).rvs         
@@ -55,7 +55,7 @@ for t_size in tree_size:
     for c_pu in nb_cpus:
         for algo in algos:
             distributed_tree_traversal(test_mtg,algo,"bottom_up",c_pu,t_size)   
-            distributed_tree_traversal(test_mtg,algo,"top_down",c_pu,t_size)
+            #distributed_tree_traversal(test_mtg,algo,"top_down",c_pu,t_size)
 
 
 
