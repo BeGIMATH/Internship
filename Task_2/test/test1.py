@@ -17,31 +17,31 @@ import sys
 import pickle 
 sys.path.append("../../Task_2/src/")
 
-from algo_bench import *
+from algo_bench_mtg import *
 from algo_mtg import *
 
-algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
-my_mtg = MTG()
-#my_mtg = MTG('consolidated_mango3d.mtg')
-np.random.seed(seed=233423)
-dist = poisson(1., loc=1).rvs
+algos = [Best_Fit_Clustering_Paper_MTG,First_Fit_Clustering_Paper_MTG,Best_Fit_Clustering_post_order_MTG,Best_Fit_Clustering_level_order_MTG]
 
-vid = my_mtg.add_component(my_mtg.root)
+my_mtg = MTG('../data/consolidated_mango3d.mtg')
+#np.random.seed(seed=233423)
+#dist = poisson(1., loc=1).rvs
 
-random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99)
-plot(my_mtg)
+#vid = my_mtg.add_component(my_mtg.root)
+
+#random_tree(my_mtg, vid, nb_children=dist, nb_vertices=99)
+#plot(my_mtg)
 for algo in algos:
     if my_mtg.property('cluster') != {}:
         my_mtg.remove_property('cluster')
     if my_mtg.property('sub_tree') != {}:
         my_mtg.remove_property('sub_tree')
-    if algo != First_Fit_Clustering_Paper:
+    if algo != First_Fit_Clustering_Paper_MTG:
         algo(my_mtg,10,0.4)
-        plot_clusters_dict(my_mtg,nb_cluster=10,file_name = algo.__name__ + 'clusters')
-        plot_clusters_dependecy(my_mtg,nb_cluster=10,file_name = algo.__name__ + '_dependecy')
+        #plot_clusters_dict(my_mtg,nb_cluster=10,file_name = algo.__name__ + 'clusters')
+        #plot_clusters_dependecy(my_mtg,nb_cluster=10,file_name = algo.__name__ + '_dependecy')
     else:
         algo(my_mtg,10) 
-        plot_clusters_dict(my_mtg,nb_cluster=10,file_name = algo.__name__ + 'clusters')
-        plot_clusters_dependecy(my_mtg,nb_cluster=10,file_name = algo.__name__ + '_dependecy')
+        #plot_clusters_dict(my_mtg,nb_cluster=10,file_name = algo.__name__ + 'clusters')
+        #plot_clusters_dependecy(my_mtg,nb_cluster=10,file_name = algo.__name__ + '_dependecy')
        
         

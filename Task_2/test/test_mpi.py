@@ -46,7 +46,7 @@ if rank == 0:
 """
 algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
 tree_size = [99999]
-nb_cpus = [4]#,16,32,64,128]
+nb_cpus = [8,16,32,64,128]
 for t_size in tree_size:
     test_mtg = MTG()
     dist = poisson(1., loc=1).rvs         

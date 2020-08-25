@@ -1,7 +1,7 @@
 
 """Implementation of a number of Tree clustering algorithms to benchmark the algorithms in terms of distributed computing performance"""
 
-from Queue import *
+from tools import *
 
 def Best_Fit_Clustering_Paper(T, p, alpha):
     ''' Clustering Trees based on the paper of Hambrusch and Liu

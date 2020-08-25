@@ -1,6 +1,6 @@
 """Implementation of a number of MTG clustering algorithms"""
 
-from Queue import *
+from tools import *
 
 def Best_Fit_Clustering_MTG(T, p, alpha):
     ''' Clustering MTG(Tree) based on the paper of Hambrusch and Liu but modified for better performance
