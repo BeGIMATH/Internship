@@ -15,10 +15,11 @@ def Best_Fit_Clustering_Paper_MTG(T, p, alpha):
         :Returns Type:
             List
         '''
-    C = [[] for i in range(p)]
+    
     remain = 0
-    weight = np.zeros(len(T))
-   
+    #weight = np.zeros(len(T))
+    weight = {}
+    
     internode_root = T.roots(T.max_scale())
     c_omponent = internode_root[0]
     for v in post_order(T,c_omponent):
@@ -27,7 +28,7 @@ def Best_Fit_Clustering_Paper_MTG(T, p, alpha):
     c = int(len(T)/p)
     sub_tree = T.property('sub_tree')
     cluster = T.property('cluster')
-    weight = weight.astype(int)
+    #weight = weight.astype(int)
     def Best_Fit(remain,first_time,Q,last_cluster,cluster_index):
        
         sub = None
@@ -144,7 +145,8 @@ def First_Fit_Clustering_Paper_MTG(T,p):
     internode_root = T.roots(T.max_scale())
     c_omponent = internode_root[0]
     vtx_id = c_omponent
-    weights = np.zeros(len(T))
+    weights = {}
+    
     for v in post_order(T, c_omponent):
         weights[v] = 1 + sum([weights[vid] for vid in T.children(v)])
     weights_copy = weights
@@ -209,8 +211,9 @@ def Best_Fit_Clustering_post_order_MTG(T,p, alpha):
     '''
     cluster = T.property('cluster')
     sub_tree = T.property('sub_tree')
-    C = [[] for i in range(p)]
-    weight = np.zeros(len(T))
+   
+    #weight = np.zeros(len(T))
+    weight = {}
     internode_root = T.roots(T.max_scale())
     c_omponent = internode_root[0]
     for v in post_order(T, c_omponent):
@@ -266,7 +269,8 @@ def Best_Fit_Clustering_level_order_MTG(T,p, alpha):
         :Returns Type:
             List
     '''
-    weight = np.zeros(len(T))
+    #weight = np.zeros(len(T))
+    weight = {}
     internode_root = T.roots(T.max_scale())
     c_omponent = internode_root[0]
     for v in post_order(T, c_omponent):

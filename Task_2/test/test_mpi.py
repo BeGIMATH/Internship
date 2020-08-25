@@ -10,53 +10,71 @@ import sys
 
 sys.path.append("../../Task_2/src/")
 
-from algo_bench import *
+from algo_bench_mtg import *
 from algo_distributed_mpi import *
 from IPython.display import HTML
 from IPython.display import IFrame
 from mpi4py import MPI
 import timeit
 
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
 
-"""
-if rank == 0:
-   
-    start = timeit.default_timer()
-    dict_result = {}
-    for node in pre_order(test_mtg,vid):
-        if test_mtg.parent(node) == None:
-            f()
-            dict_result[node] = 1
-        else:
-            dict_result[node] = 1 + dict_result[test_mtg.parent(node)]
-            f()
-    end = timeit.default_timer()
+def f_unc():
+    for x in range(10000):
+       x+=1
 
-    print("Time it took for the sequentail program ",end - start,"direction top down")
-    
-    
-    start = timeit.default_timer()
-    dict_result_1 = {}
-    for node in post_order2(test_mtg,vid):
-        dict_result_1[node] = 1 + sum([dict_result_1[v_id] for v_id in test_mtg.children(node)])
-        f()
-    end = timeit.default_timer()
+algos = [Best_Fit_Clustering_Paper_MTG,First_Fit_Clustering_Paper_MTG,Best_Fit_Clustering_post_order_MTG,Best_Fit_Clustering_level_order_MTG]
+t_size = 99999
 
-    print("Time it took for the sequentail program ",end - start,"direction bottom up")
-"""
-algos = [Best_Fit_Clustering_Paper,First_Fit_Clustering_Paper,Best_Fit_Clustering_Queue_1,Best_Fit_Clustering_level_order]
-tree_size = [99999]
-nb_cpus = [8,16,32,64,128]
-for t_size in tree_size:
-    test_mtg = MTG()
+for i in range(100):
+    my_mtg = MTG()
+    np.random.seed(seed = i)
     dist = poisson(1., loc=1).rvs         
-    vid = test_mtg.add_component(test_mtg.root)
-    random_tree(test_mtg,vid,nb_children=dist,nb_vertices=t_size)
-    for c_pu in nb_cpus:
+    vid = my_mtg.add_component(my_mtg.root)
+    random_tree(my_mtg,vid,nb_children=dist,nb_vertices=t_size)
+    for j in range(5):
         for algo in algos:
-            distributed_tree_traversal(test_mtg,algo,"bottom_up",c_pu,t_size)   
-            #distributed_tree_traversal(test_mtg,algo,"top_down",c_pu,t_size)
+            if rank == 0:
+                if my_mtg.property('cluster') != {}:
+                    my_mtg.remove_property('cluster')
+                if my_mtg.property('sub_tree') != {}:
+                    my_mtg.remove_property('sub_tree')
+                if my_mtg.property('connection_nodes') != {}:
+                    my_mtg.remove_property('connection_nodes')
+                if my_mtg.max_scale() - 1 !=  0:
+                    my_mtg.remove_scale(my_mtg.max_scale()-1)
+                start = MPI.Wtime()
+                if algo in algos:
+                    if algo != First_Fit_Clustering_Paper_MTG :
+                        algo(my_mtg,j,0.4)
+                    else:
+                        algo(my_mtg,j)
+                else:
+                    raise ("Wrong algorithm try one of these ",algos)
+                end = MPI.Wtime()
+                if path.exists('../data/results/' + algo.__name__ + '_partition_time.npy'):
+                    with open('../data/results/' + algo.__name__ + '_partition_time.npy','rb') as f:
+                        data = np.load(f)
 
+                    data[i,j] = end - start
+                    with open('../data/results/' + algo.__name__ + '_partition_time.npy','wb') as f1:
+                        np.save(f1,data)      
+                else:
+                    data = np.zeros([100,5])
+                    data[i,j] = end - start
+                    with open('../data/results/' + algo.__name__ + '_partition_time','wb') as f1:
+                        np.save(f1,data) 
+
+        
+                print("Partitoning finished for ",algo.__name__," is", end-start)
+            
+            comm.Barrier()
+           
+                
+            distributed_tree_traversal_bottom_up(my_mtg,j,f_unc,i)   
+            distributed_tree_traversal_top_down(my_mtg,j,f_unc,i) 
+         
 
 
 

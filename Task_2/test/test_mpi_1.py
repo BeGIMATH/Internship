@@ -21,12 +21,11 @@ import timeit
 
 algos = [Best_Fit_Clustering_Paper_MTG,First_Fit_Clustering_Paper_MTG,Best_Fit_Clustering_post_order_MTG,Best_Fit_Clustering_level_order_MTG]
 
-nb_cpus = [4]
-test_mtg = MTG('../data/consolidated_mango3d.mtg')
+nb_cpus = [4,6]
 
 for c_pu in nb_cpus:
     for algo in algos:
-        distributed_tree_traversal(test_mtg,algo,"bottom_up",c_pu)   
-        distributed_tree_traversal(test_mtg,algo,"top_down",c_pu)
+        distributed_tree_traversal(algo,"bottom_up",c_pu)   
+        #distributed_tree_traversal(test_mtg,algo,"top_down",c_pu)
 
 
