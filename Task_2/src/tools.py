@@ -89,22 +89,7 @@ def level_order2(T, vtx_id, visitor_filter=None):
 # Check how well the clusters are balanced
 
 
-def balance_valuation(T, clusters):
-    nb_clusters = len(clusters)
-    optimal_size = len(T)/nb_clusters
-    max = 0
-    for i in range(nb_clusters):
-        if len(clusters[i]) > max:
-            max = len(clusters[i])
 
-    return max - optimal_size
-
-# Python3 program to find the 
-# longest path in the DAG 
-	
-# Function to traverse the DAG 
-# and apply Dynamic Programming 
-# to find the longest path 
 def dfs(node, adj, dp, vis): 
 
 	# Mark as visited 
@@ -142,14 +127,13 @@ def longest_path(T,p):
     T.remove_scale(T.max_scale()-1)
     # Dp array 
     dp = [0] * p 
-    # Visited array to know if the node 
-    # has been visited previously or not 
-    vis = [False] * p 
+    
+    visited = [False] * p 
 
     # Call DFS for every unvisited vertex 
     for i in range(p): 
-        if not vis[i]: 
-            dfs(i, adj, dp, vis) 
+        if not visited[i]: 
+            dfs(i, adj, dp, visited) 
 	
     length = 0
 	

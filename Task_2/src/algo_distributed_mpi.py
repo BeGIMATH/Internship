@@ -14,7 +14,7 @@ import numpy as np
 import timeit
 import os.path 
 from os import path
-def distributed_tree_traversal_bottom_up(g,c_pu,func,t_index):
+def distributed_tree_traversal_bottom_up(g,c_pu,func,t_index,nb_tries):
     ''' Traversing the tree in a distributed way, were the work is distributed based on the clustering algorithm used
         :Parameterers:
         -   'g' The tree we want to traverse
@@ -125,7 +125,7 @@ def distributed_tree_traversal_bottom_up(g,c_pu,func,t_index):
             with open('../data/results/' + algo.__name__ + '_bottom_up.npy','wb') as f1:
                 np.save(f1,data)  
         else:
-            data = np.zeros([100,5])
+            data = np.zeros([len(nb_tries),len(nb_cpus)])
             data[t_index,c_pu] = end_1 - start_1
             with open('../data/results/' + algo.__name__ + '_bottom_up.npy','wb') as f1:
                 np.save(f1,data)  
@@ -135,7 +135,7 @@ def distributed_tree_traversal_bottom_up(g,c_pu,func,t_index):
         
        
 
-def distributed_tree_traversal_top_down(g,c_pu,func,t_index):
+def distributed_tree_traversal_top_down(g,c_pu,func,t_index,nb_tries):
     ''' Traversing the tree in a distributed way, were the work is distributed based on the clustering algorithm used
         :Parameterers:
         -   'g' The tree we want to traverse
@@ -227,7 +227,7 @@ def distributed_tree_traversal_top_down(g,c_pu,func,t_index):
             with open('../data/results/' + algo.__name__ + '_top_down.npy','wb') as f1:
                 np.save(f1,data)  
         else:
-            data = np.zeros([100,5])
+            data = np.zeros([len(nb_tries),len(nb_cpus)])
             data[t_index,c_pu] = end_1 - start_1
             with open('../data/results/' + algo.__name__ + '_top_down.npy','wb') as f1:
                 np.save(f1,data)  
