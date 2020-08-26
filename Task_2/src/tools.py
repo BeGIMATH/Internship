@@ -60,11 +60,10 @@ class Priority_queue:
     def last(self):
         return self.heapList[1]
 
-# Iterative Method to traverse the tree in level-order
+
 def level_order(T, vtx_id):
-    # Create an empty queue for level order traversal
     queue = []
-    # Enqueue Root and initialize height
+    
     queue.append(vtx_id)
     while len(queue) > 0:
         node = queue.pop(0)
@@ -72,13 +71,13 @@ def level_order(T, vtx_id):
             queue.append(vid)
         yield node
 
-# Iterative Method to traverse the tree in level-order
+
 def level_order2(T, vtx_id, visitor_filter=None):
-    # Create an empty queue for level order traversal
     queue = []
+    
     if visitor_filter is None:
         visitor_filter = lambda x: True
-    # Enqueue Root and initialize height
+    
     queue.append(vtx_id)
     while len(queue) > 0:
         node = queue.pop(0)
@@ -86,24 +85,15 @@ def level_order2(T, vtx_id, visitor_filter=None):
             if visitor_filter(vid):
                 queue.append(vid)
         yield node
-# Check how well the clusters are balanced
-
-
 
 def dfs(node, adj, dp, vis): 
+    vis[node] = True
 
-	# Mark as visited 
-	vis[node] = True
-	
-	# Traverse for all its children 
-	for i in range(0, len(adj[node])): 
-	
-		# If not visited 
-		if not vis[adj[node][i]]: 
-			dfs(adj[node][i], adj, dp, vis) 
-	
-		# Store the max of the paths 
-		dp[node] = max(dp[node], 1 + dp[adj[node][i]]) 
+    for i in range(0, len(adj[node])): 
+        if not vis[adj[node][i]]: 
+            dfs(adj[node][i], adj, dp, vis) 
+
+        dp[node] = max(dp[node], 1 + dp[adj[node][i]]) 
 	
 
 
@@ -111,7 +101,6 @@ def longest_path(T,p):
     sub_tree  = T.property('sub_tree')
     
     c_luster = T.property('cluster')
-    
     vids = [i for i in range(p)]
     
     adj = [set() for i in range(p)]
@@ -125,21 +114,22 @@ def longest_path(T,p):
     adj = [list(adj[i]) for i in range(p)]
     
     T.remove_scale(T.max_scale()-1)
-    # Dp array 
+    
     dp = [0] * p 
     
     visited = [False] * p 
 
-    # Call DFS for every unvisited vertex 
     for i in range(p): 
         if not visited[i]: 
             dfs(i, adj, dp, visited) 
 	
     length = 0
 	
-    # Traverse and find the maximum of all dp[i] 
     for i in range(p): 
         length = max(length, dp[i]) 
 
     return length
 
+def f_unc():
+    for x in range(10000):
+       x+=1

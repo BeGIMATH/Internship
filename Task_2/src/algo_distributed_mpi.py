@@ -5,16 +5,14 @@ import os
 import timeit
 import sys
 sys.path.append("../../Task_2/src/")
-from algo_bench import *
-from algo_bench_mtg import *
-import psutil
+from algo_clustering import *
+
 from mpi4py import MPI 
-#from oawidgets.mtg import *
 import numpy as np
 import timeit
 import os.path 
 from os import path
-def distributed_tree_traversal_bottom_up(g,c_pu,func,t_index,nb_tries):
+def distributed_tree_traversal_bottom_up(g,algo,c_pu,func,t_index,nb_tries):
     ''' Traversing the tree in a distributed way, were the work is distributed based on the clustering algorithm used
         :Parameterers:
         -   'g' The tree we want to traverse
@@ -32,7 +30,7 @@ def distributed_tree_traversal_bottom_up(g,c_pu,func,t_index,nb_tries):
     start = MPI.Wtime()
     
     nb_cpus = [8,16,32,64,128]
-
+    #
     if rank == 0:
         
         sub_tree = g.property('sub_tree')
@@ -109,6 +107,7 @@ def distributed_tree_traversal_bottom_up(g,c_pu,func,t_index,nb_tries):
                     else:
                         func()
                         dict_result[vid] = 1 + sum([dict_result[v_id] for v_id in my_mtg.children(vid)])
+                        
     else:
         dict_result = {}
     comm.Barrier()
@@ -117,7 +116,9 @@ def distributed_tree_traversal_bottom_up(g,c_pu,func,t_index,nb_tries):
     
     end_1 = MPI.Wtime()
     if rank == 0:
-        #print("Time it took for MPI with direction bottom up"," with ",c_pu,"workers ",end_1 - start_1)
+        for element in data:
+            recv_results.update(element)
+        #print("Time it took for MPI with direction bottom up"," with ",nb_cpus[c_pu],"workers ",end_1 - start_1)
         if path.exists('../data/results/' + algo.__name__ + '_bottom_up.npy'):
             with open('../data/results/' + algo.__name__ + '_bottom_up.npy','rb') as f:
                 data = np.load(f)
@@ -125,21 +126,19 @@ def distributed_tree_traversal_bottom_up(g,c_pu,func,t_index,nb_tries):
             with open('../data/results/' + algo.__name__ + '_bottom_up.npy','wb') as f1:
                 np.save(f1,data)  
         else:
-            data = np.zeros([len(nb_tries),len(nb_cpus)])
+            data = np.zeros([nb_tries,len(nb_cpus)])
             data[t_index,c_pu] = end_1 - start_1
             with open('../data/results/' + algo.__name__ + '_bottom_up.npy','wb') as f1:
                 np.save(f1,data)  
-
-        for element in data:
-            recv_results.update(element)
         
        
+        
+        
 
-def distributed_tree_traversal_top_down(g,c_pu,func,t_index,nb_tries):
+def distributed_tree_traversal_top_down(g,algo,c_pu,func,t_index,nb_tries):
     ''' Traversing the tree in a distributed way, were the work is distributed based on the clustering algorithm used
         :Parameterers:
         -   'g' The tree we want to traverse
-        -   'algo' The algorithm used to cluster the nodes of the tree
         -   'alpha' Parameter to control the difference between cluster sizes, default value 0.4
         :Returns:
             Nothing
@@ -152,8 +151,8 @@ def distributed_tree_traversal_top_down(g,c_pu,func,t_index,nb_tries):
     recv_results = {}
     start = MPI.Wtime()
     
-    nb_cpus = [8,16,32,64,128]
-
+    #nb_cpus = [8,16,32,64,128]
+    nb_cpus = [4]
     if rank == 0:
         
         
@@ -164,8 +163,7 @@ def distributed_tree_traversal_top_down(g,c_pu,func,t_index,nb_tries):
                 connection_nodes[g.parent(node)] = True
         g.insert_scale(g.max_scale(), lambda vid: vid in sub_tree and vid != None)
         
-        end = MPI.Wtime()
-        
+       
      
     else:
         my_mtg = None
@@ -219,7 +217,10 @@ def distributed_tree_traversal_top_down(g,c_pu,func,t_index,nb_tries):
     comm.Barrier()
     end_1 = MPI.Wtime()
     if rank == 0:
-        #print("Time it took for MPI with direction bottom up"," with ",c_pu,"workers ",end_1 - start_1)
+        #print("Time it took for MPI with direction top down"," with ",nb_cpus[c_pu],"workers ",end_1 - start_1)
+        for element in data:
+            recv_results.update(element)
+        
         if path.exists('../data/results/' + algo.__name__ + '_top_down.npy'):
             with open('../data/results/' + algo.__name__ + '_top_down.npy','rb') as f:
                 data = np.load(f)
@@ -227,13 +228,19 @@ def distributed_tree_traversal_top_down(g,c_pu,func,t_index,nb_tries):
             with open('../data/results/' + algo.__name__ + '_top_down.npy','wb') as f1:
                 np.save(f1,data)  
         else:
-            data = np.zeros([len(nb_tries),len(nb_cpus)])
+            data = np.zeros([nb_tries,len(nb_cpus)])
             data[t_index,c_pu] = end_1 - start_1
             with open('../data/results/' + algo.__name__ + '_top_down.npy','wb') as f1:
                 np.save(f1,data)  
 
-        for element in data:
-            recv_results.update(element)
+        if my_mtg.property('cluster') != {}:
+            g.remove_property('cluster')
+        if g.property('sub_tree') != {}:
+            g.remove_property('sub_tree')
+        if g.property('connection_nodes') != {}:
+            g.remove_property('connection_nodes')
+        if g.max_scale() - 1 !=  0:
+            g.remove_scale(g.max_scale()-1)
         
         
 
@@ -245,7 +252,6 @@ def distributed_tree_traversal_top_down(g,c_pu,func,t_index,nb_tries):
     
 
             
-
 
 
 

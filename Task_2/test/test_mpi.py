@@ -16,7 +16,7 @@ from IPython.display import HTML
 from IPython.display import IFrame
 from mpi4py import MPI
 import timeit
-from tools import *
+
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
@@ -24,11 +24,12 @@ def f_unc():
     for x in range(10000):
        x+=1
 
-algos = [Best_Fit_Clustering,First_Fit_Clustering,Best_Fit_Clustering_post_order,Best_Fit_Clustering_level_order]
+algos = [Best_Fit_Clustering,First_Fit_Clustering, Best_Fit_Clustering_post_order, Best_Fit_Clustering_level_order]
 t_size = 99999
-nb_tries = 10
+
 nb_cpus = [8,16,32,64,128]
 
+nb_tries = 100
 for i in range(nb_tries):
     my_mtg = MTG()
     np.random.seed(seed = i)
@@ -48,12 +49,15 @@ for i in range(nb_tries):
                     my_mtg.remove_scale(my_mtg.max_scale()-1)
                 start = MPI.Wtime()
                 if algo in algos:
-                    if algo != First_Fit_Clustering_Paper_MTG :
+                    if algo != First_Fit_Clustering :
                         algo(my_mtg,nb_cpus[j],0.4)
                     else:
                         algo(my_mtg,nb_cpus[j])
+               
+                
                 else:
                     raise ("Wrong algorithm try one of these ",algos)
+                
                 end = MPI.Wtime()
                 if path.exists('../data/results/' + algo.__name__ + '_partition_time.npy'):
                     with open('../data/results/' + algo.__name__ + '_partition_time.npy','rb') as f:
@@ -65,32 +69,34 @@ for i in range(nb_tries):
                 else:
                     data = np.zeros([nb_tries,len(nb_cpus)])
                     data[i,j] = end - start
-                    with open('../data/results/' + algo.__name__ + '_partition_time','wb') as f1:
+                    with open('../data/results/' + algo.__name__ + '_partition_time.npy','wb') as f1:
                         np.save(f1,data) 
                 
-                if path.exists('../data/results/' + algo.__name__ + '_longes_path.npy'):
+                if path.exists('../data/results/' + algo.__name__ + '_longest_path.npy'):
                     with open('../data/results/' + algo.__name__ + '_longest_path.npy','rb') as f:
                         data = np.load(f)
+                    #T.insert_scale(T.max_scale(), lambda vid: vid in sub_tree and vid != None)
 
-                    data[i,j] = longest_path(my_mtg,nb_cpus[j])
+                    data[i,j] = longest_path(my_mtg,6)
                     with open('../data/results/' + algo.__name__ + '_longest_path.npy','wb') as f1:
                         np.save(f1,data)      
                 else:
                     data = np.zeros([nb_tries,len(nb_cpus)])
-                    data[i,j] = longest_path(my_mtg,nb_cpus[j])
-                    with open('../data/results/' + algo.__name__ + '_longest_path','wb') as f1:
+                    data[i,j] = longest_path(my_mtg,6)
+                    with open('../data/results/' + algo.__name__ + '_longest_path.npy','wb') as f1:
                         np.save(f1,data) 
+
+                
 
         
                 print("Partitoning finished for ",algo.__name__," is", end-start)
-            
+                print("---------------------------------------------------------------")
             comm.Barrier()
            
                 
-            distributed_tree_traversal_bottom_up(my_mtg,j,f_unc,i,nb_tries)   
-            distributed_tree_traversal_top_down(my_mtg,j,f_unc,i,nb_tries) 
+            distributed_tree_traversal_bottom_up(my_mtg,algo,j,f_unc,i,nb_tries)   
+            distributed_tree_traversal_top_down(my_mtg,algo,j,f_unc,i,nb_tries) 
          
-
 
 
 
