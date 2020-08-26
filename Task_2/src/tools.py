@@ -99,57 +99,63 @@ def balance_valuation(T, clusters):
 
     return max - optimal_size
 
-# Compute the number of dependecies
-def number_of_dependencies(T):
-    cluster = T.property('cluster')
-    max_dependecy = 0
-    previous_node = None
-    depth = 0
-    same_cluster = False
-    for node in T.property('sub_tree'):
-        if previous_node is not None:
-            #Reset depth to zero
-            if cluster[previous_node] != cluster[node]:
-                depth = 0
+# Python3 program to find the 
+# longest path in the DAG 
+	
+# Function to traverse the DAG 
+# and apply Dynamic Programming 
+# to find the longest path 
+def dfs(node, adj, dp, vis): 
 
-        while T.parent(node) != None:
-            if cluster[T.parent(node)] != cluster[node]:
-                depth += 1
-            node = T.parent(node)
-        previous_node = node
-        max_dependecy = max(depth,max_dependecy)
-        
-    return max_dependecy
-
-def Max_depth(node):
-    childs = my_mtg.children(node)
-    nodes = []
-    leafs = []
-    #Classify nodes either as leafs or as nodes
-    for i in childs:
-        if my_mtg.children(i) == None:
-            leafs.append(i)
-        else:
-            nodes.append(i)
-    #If the all
-    if len(nodes) == 0:
-        return 1
-    if len(nodes) == 1:
-        return Max_depth(nodes[0]) + 1
-    else:
-         return max(map(Max_depth,[nodes[i] for i in range(len(nodes))] )) + 1
+	# Mark as visited 
+	vis[node] = True
+	
+	# Traverse for all its children 
+	for i in range(0, len(adj[node])): 
+	
+		# If not visited 
+		if not vis[adj[node][i]]: 
+			dfs(adj[node][i], adj, dp, vis) 
+	
+		# Store the max of the paths 
+		dp[node] = max(dp[node], 1 + dp[adj[node][i]]) 
+	
 
 
-def max_nb_dependecies(T):
-    cluster = T.property('cluster')
-    sub_tree = T.property('sub_tree')
-    g.insert_scale(my_mtg.max_scale(), lambda vid: my_mtg.property('sub_tree').get(vid,None) != None)
+def longest_path(T,p):
+    sub_tree  = T.property('sub_tree')
     
-    root = my_mtg.component_roots_at_scale_iter(my_mtg.root,scale=my_mtg.max_scale()-1)
+    c_luster = T.property('cluster')
     
-    a = list(root)
-    result = Max_depth(a[0])
-    my_mtg.remove_scale(my_mtg.max_scale()-1)
-    return result
+    vids = [i for i in range(p)]
+    
+    adj = [set() for i in range(p)]
+    T.insert_scale(T.max_scale(), lambda vid:T.property('sub_tree').get(vid,None) != None)	
 
+    for vid in T.vertices(scale=T.max_scale()-1):
+        if T.parent(vid) is not None:
+            adj[c_luster[T.parent(T.component_roots(vid)[0])]].add(c_luster[T.component_roots(vid)[0]])
+
+    
+    adj = [list(adj[i]) for i in range(p)]
+    
+    T.remove_scale(T.max_scale()-1)
+    # Dp array 
+    dp = [0] * p 
+    # Visited array to know if the node 
+    # has been visited previously or not 
+    vis = [False] * p 
+
+    # Call DFS for every unvisited vertex 
+    for i in range(p): 
+        if not vis[i]: 
+            dfs(i, adj, dp, vis) 
+	
+    length = 0
+	
+    # Traverse and find the maximum of all dp[i] 
+    for i in range(p): 
+        length = max(length, dp[i]) 
+
+    return length
 
