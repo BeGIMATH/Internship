@@ -30,7 +30,7 @@ def distributed_tree_traversal_bottom_up(g,algo,c_pu,func,t_index,nb_tries):
     start = MPI.Wtime()
     
     nb_cpus = [8,16,32,64,128]
-    #
+    
     if rank == 0:
         
         sub_tree = g.property('sub_tree')

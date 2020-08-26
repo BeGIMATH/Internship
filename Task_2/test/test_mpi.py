@@ -77,12 +77,12 @@ for i in range(nb_tries):
                         data = np.load(f)
                     #T.insert_scale(T.max_scale(), lambda vid: vid in sub_tree and vid != None)
 
-                    data[i,j] = longest_path(my_mtg,6)
+                    data[i,j] = longest_path(my_mtg,nb_cpus[j])
                     with open('../data/results/' + algo.__name__ + '_longest_path.npy','wb') as f1:
                         np.save(f1,data)      
                 else:
                     data = np.zeros([nb_tries,len(nb_cpus)])
-                    data[i,j] = longest_path(my_mtg,6)
+                    data[i,j] = longest_path(my_mtg,nb_cpus[j])
                     with open('../data/results/' + algo.__name__ + '_longest_path.npy','wb') as f1:
                         np.save(f1,data) 
 
