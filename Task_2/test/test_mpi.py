@@ -25,10 +25,10 @@ def f_unc():
        x+=1
 
 algos = [Best_Fit_Clustering,First_Fit_Clustering, Best_Fit_Clustering_post_order, Best_Fit_Clustering_level_order]
-t_size = 99999
+t_size = 99
 
 nb_cpus = [8,16,32,64,128]
-
+#nb_cpus=[4]
 nb_tries = 100
 for i in range(nb_tries):
     my_mtg = MTG()
@@ -59,6 +59,7 @@ for i in range(nb_tries):
                     raise ("Wrong algorithm try one of these ",algos)
                 
                 end = MPI.Wtime()
+                print("Partitoning finished for ",algo.__name__," is", end-start,"\n")
                 if path.exists('../data/results/' + algo.__name__ + '_partition_time.npy'):
                     with open('../data/results/' + algo.__name__ + '_partition_time.npy','rb') as f:
                         data = np.load(f)
@@ -88,9 +89,9 @@ for i in range(nb_tries):
 
                 
 
-        
-                print("Partitoning finished for ",algo.__name__," is", end-start)
-                print("---------------------------------------------------------------")
+                
+                print("Finished writting data to files\n")
+                print("---------------------------------------------------------------\n")
             comm.Barrier()
            
                 
