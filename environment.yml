@@ -10,9 +10,14 @@ dependencies:
   - python=3.7
   - cmake
   - openmpi
-  - scoop
   - openalea.mtg
   - openalea.lpy
   - openalea.plantgl
   - mpi4py
   - k3d
+  - pyvis
+  - psutil
+  - scipy
+  - numpy
+  - alinea.caribu
+  - ephem geopy xlrd

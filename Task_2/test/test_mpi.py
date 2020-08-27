@@ -25,7 +25,7 @@ def f_unc():
        x+=1
 
 algos = [Best_Fit_Clustering,First_Fit_Clustering, Best_Fit_Clustering_post_order, Best_Fit_Clustering_level_order]
-t_size = 99
+t_size = 99999
 
 nb_cpus = [8,16,32,64,128]
 #nb_cpus=[4]
