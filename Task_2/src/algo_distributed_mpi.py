@@ -29,12 +29,15 @@ def distributed_tree_traversal_bottom_up(g,algo,c_pu,func,t_index,nb_tries):
     recv_results = {}
     start = MPI.Wtime()
     
-    nb_cpus = [8,16,32,64,128]
+    #nb_cpus = [8,16,32,64,128]
+    nb_cpus=[4]
+
     
     if rank == 0:
         
         sub_tree = g.property('sub_tree')
         connection_nodes = g.property('connection_nodes')
+        
         for node in sub_tree:
             if g.parent(node) != None:
                 connection_nodes[g.parent(node)] = True
@@ -46,6 +49,7 @@ def distributed_tree_traversal_bottom_up(g,algo,c_pu,func,t_index,nb_tries):
 
     start_1 = MPI.Wtime()
     my_mtg = comm.bcast(g,root=0)
+
     cluster = my_mtg.property('cluster')
     sub_tree = my_mtg.property('sub_tree')
     connection_nodes = my_mtg.property('connection_nodes')
@@ -152,7 +156,9 @@ def distributed_tree_traversal_top_down(g,algo,c_pu,func,t_index,nb_tries):
     recv_results = {}
     start = MPI.Wtime()
     
-    nb_cpus = [8,16,32,64,128]
+    #nb_cpus = [8,16,32,64,128]
+    nb_cpus=[4]
+
     if rank == 0:
         
         
@@ -170,13 +176,16 @@ def distributed_tree_traversal_top_down(g,algo,c_pu,func,t_index,nb_tries):
 
     start_1 = MPI.Wtime()
     my_mtg = comm.bcast(g,root=0)
+    
     cluster = my_mtg.property('cluster')
+    
     sub_tree = my_mtg.property('sub_tree')
+    
     connection_nodes = my_mtg.property('connection_nodes')
     for node in sub_tree:
         if my_mtg.parent(node) != None:
             connection_nodes[my_mtg.parent(node)] = True
-    
+
     if rank == 0:
         for node in my_mtg.vertices(scale=my_mtg.max_scale()-1):
             max_scale_id = my_mtg.component_roots(node)[0]

@@ -1,7 +1,9 @@
 from openalea.lpy import *
 from string import ascii_uppercase
 import psutil
-lsystem = Lsystem()
+from itertools import starmap 
+lsystem = Lsystem('/home/begatim/Desktop/Thesis_Project/Practice/lpy_play/test.lpy')
+"""
 code = '''
 Axiom:
 
@@ -18,13 +20,36 @@ code += '\n'
 
 lsystem.setCode(code)
 
-updated_string = lsystem.parallel_iterate()
+lsystem.derive()
 
+cores = psutil.cpu_count(logical=False)
+cstring = lsystem.derive()
+print("Length before parallel derivation",len(cstring))
+partition_size = int(len(cstring)/cores)
+res = None
+
+if (len(cstring) % cores != 0):
+    print("Entered the if inside the while loop")
+    
+    res = list(starmap(lsystem.partial_derivation,[(cstring,i*partition_size,partition_size  if i < cores-1 else partition_size + int(len(cstring) % cores)) for i in range(cores)]))
+    print("Finished the computations")
+else:
+    print("Entered the else inside the while loop")
+    res = list(starmap(lsystem.partial_derivation,[(cstring,i*partition_size, partition_size) for i in range(cores)]))
+    print("Finished the computations")    
+
+final_result = lsystem.AxialTree()
+
+for i in range(len(res)):
+    final_result += res[i]
+
+print(len(final_result)) 
+"""
+updated_string = lsystem.parallel_iterate()
 print(updated_string)
 
-"""
 #print(lstring)
-
+"""
 def sequential_application(lstring, length):
     res = list(map(partial_application,[lstring[i*length:i*length+length] for i in range(len(ascii_uppercase))]))
     return res
