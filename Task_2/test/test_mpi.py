@@ -31,7 +31,7 @@ t_size = 99999
 nb_cpus = [8,16,32,64,128]
 #nb_cpus=[4]
 nb_tries = 100
-for i in range(nb_tries):
+for i in range(38,nb_tries):
     my_mtg = MTG()
     np.random.seed(seed = i)
     dist = poisson(1., loc=1).rvs         
