@@ -28,8 +28,8 @@ algos = [Best_Fit_Clustering,First_Fit_Clustering, Best_Fit_Clustering_post_orde
 t_size = 99999
 
 
-#nb_cpus = [8,16,32,64,128]
-nb_cpus=[4]
+nb_cpus = [8,16,32,64,128]
+#nb_cpus=[4]
 nb_tries = 100
 for i in range(nb_tries):
     my_mtg = MTG()

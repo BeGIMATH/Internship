@@ -29,8 +29,8 @@ def distributed_tree_traversal_bottom_up(g,algo,c_pu,func,t_index,nb_tries):
     recv_results = {}
     start = MPI.Wtime()
     
-    #nb_cpus = [8,16,32,64,128]
-    nb_cpus=[4]
+    nb_cpus = [8,16,32,64,128]
+    #nb_cpus=[4]
 
     
     if rank == 0:
@@ -122,7 +122,7 @@ def distributed_tree_traversal_bottom_up(g,algo,c_pu,func,t_index,nb_tries):
     if rank == 0:
         for element in data:
             recv_results.update(element)
-        print("Time it took for MPI with direction bottom up"," with ",nb_cpus[c_pu],"workers ",end_1 - start_1)
+        print("Time it took for MPI with direction bottom up"," with ",nb_cpus[c_pu],"workers ",end_1 - start_1," and tree of size ",t_index)
         
         if path.exists('../data/results/' + algo.__name__ + '_bottom_up.npy'):
             with open('../data/results/' + algo.__name__ + '_bottom_up.npy','rb') as f:
@@ -156,8 +156,8 @@ def distributed_tree_traversal_top_down(g,algo,c_pu,func,t_index,nb_tries):
     recv_results = {}
     start = MPI.Wtime()
     
-    #nb_cpus = [8,16,32,64,128]
-    nb_cpus=[4]
+    nb_cpus = [8,16,32,64,128]
+    #nb_cpus=[4]
 
     if rank == 0:
         
@@ -226,7 +226,7 @@ def distributed_tree_traversal_top_down(g,algo,c_pu,func,t_index,nb_tries):
     comm.Barrier()
     end_1 = MPI.Wtime()
     if rank == 0:
-        print("Time it took for MPI with direction top down"," with ",nb_cpus[c_pu],"workers ",end_1 - start_1)
+        print("Time it took for MPI with direction top down"," with ",nb_cpus[c_pu],"workers ",end_1 - start_1," and tree of size ",t_index)
         for element in data:
             recv_results.update(element)
         
